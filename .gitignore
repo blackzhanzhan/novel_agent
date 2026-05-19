@@ -36,6 +36,9 @@ frontend/vite.log
 frontend/node_modules/
 frontend/.vite/
 
+# Release/package output
+dist/
+
 # Local runtime symlink
 novel_git_server/venv
 novel_git_server/.env.local

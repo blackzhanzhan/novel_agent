@@ -113,24 +113,112 @@ flowchart TB
 - Versioning: nested Git repositories per book
 - Runtime: local Windows development stack with Docker / Dify
 
-## Quick Start
+## 如何部署
 
-本项目当前更适合作为本地 demo 和工程样例运行。
+本项目当前更适合作为本地 demo 和工程样例运行。推荐先用 Windows 本地 demo pack 跑通，再按需要接入独立 Dify 或容器化部署。
+
+### 最省事的方式：下载 Release 包
+
+在 GitHub Releases 下载 `novel-agent-demo-v*.zip`，解压后执行：
+
+```powershell
+.\start_demo.ps1 -InitEnv
+```
+
+然后填写 `deploy/demo/.env`，再启动：
+
+```powershell
+.\start_demo.ps1
+```
+
+Release 包包含源码、Dify DSL YAML、前后端和启动脚本；不包含 Dify 数据库备份、模型密钥、Dify App API Key、私有书库或运行时存储。
+
+### 1. 准备依赖
+
+本地演示需要：
+
+- Windows + PowerShell
+- Docker Desktop
+- Python 3.11+
+- Node.js 20+
+- Git
+- 一个可访问的 Dify 运行时
+
+### 2. 配置环境变量
+
+复制示例配置，不要把真实 `.env` 提交到仓库。
 
 ```powershell
 Copy-Item .\deploy\demo\.env.example .\deploy\demo\.env
-# 填写 Dify App keys、模型供应商 key 和本地 Dify compose 路径
+```
+
+至少需要填写：
+
+- `NOVEL_AGENT_DIFY_COMPOSE_DIR`：本机 Dify compose 目录
+- `DIFY_BASE_URL`：Dify Service API 地址，默认 `http://localhost/v1`
+- `DIFY_*_API_KEY`：各个 Dify App 的 API Key
+- `DEEPSEEK_API_KEY` 或你自己的 OpenAI-compatible 模型供应商 Key
+
+### 3. 导入 Dify 工作流
+
+在 Dify 控制台导入 `dify_workflows/` 下的 YAML：
+
+- `世界模型agent.yml`
+- `文风学习agent.yml`
+- `灵感大纲agent.yml`
+- `续写agent.yml`
+- `审核agent.yml`
+- `读书存档agent.yml`
+
+导入后需要在 Dify 中重新配置模型供应商、App API Key，并确认 LoreGit ToolProvider 指向本地后端地址。
+
+### 4. 启动本地 demo
+
+```powershell
 .\deploy\demo\bootstrap.ps1
 ```
 
-也可以使用 compose demo pack：
+常用参数：
+
+```powershell
+.\deploy\demo\bootstrap.ps1 -InitEnv
+.\deploy\demo\bootstrap.ps1 -SkipDify
+.\deploy\demo\bootstrap.ps1 -Status
+.\deploy\demo\bootstrap.ps1 -Stop
+```
+
+启动成功后打开：
+
+```text
+http://127.0.0.1:5173/bookshelf.html
+```
+
+### 5. 使用 Compose Demo Pack
 
 ```powershell
 docker compose --env-file deploy\demo\.env.example -f docker-compose.demo.yml up -d --build
 docker compose --env-file deploy\demo\.env.example -f docker-compose.demo.yml run --rm smoke
 ```
 
-更详细的部署边界见 `docs/DEPLOYMENT.md`。
+Compose 版本默认不携带真实 Dify 数据库和模型密钥，需要显式连接外部 Dify 运行时。
+
+### 6. 验证部署
+
+最小验证路径：
+
+1. 打开书架页面，确认可以进入一本书。
+2. 在工作台右下角打开“动作”面板，确认世界观/文风初始化和滚动三章入口可见。
+3. 在“配置”入口填写或检查 Dify API Key。
+4. 导入或打开一本测试书，确认章节、世界观、文风、大纲和草稿文件能被读取。
+5. 运行一次续写或审查动作，确认 Dify 能通过 LoreGit ToolProvider 访问 Flask 后端。
+
+更详细的部署边界、Dify runtime 规则和 smoke check 标准见 `docs/DEPLOYMENT.md`。
+
+### Packages / GHCR 路线
+
+后续可以把 `backend` 和 `frontend` 发布到 GitHub Container Registry，让部署命令变成拉取预构建镜像。即使使用 Packages，仍然需要外部 Dify 运行时、模型供应商 Key、Dify App API Key 和 LoreGit ToolProvider 配置。
+
+当前推荐优先使用 Release ZIP，因为它更透明，也更适合本项目的本地 Dify + 本地书库 demo。
 
 ## 目录概览
 
