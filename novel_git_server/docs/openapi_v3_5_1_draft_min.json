@@ -1,0 +1,1070 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LoreGit Markdown Draft Sandbox API",
+    "description": "LoreGit Markdown read/write tools, style diagnostics, chapter length validation, generated domain-rule validation, and draft/sandbox section-write tools for Dify. Dify Agents should prefer flat tool parameters and draft_append_markdown_section/draft_replace_markdown_section for reviewed writes. Includes draft_replace_text for strict local rewrite.",
+    "version": "v4.1.0-domain-rules"
+  },
+  "servers": [
+    {
+      "url": "http://host.docker.internal:8000"
+    }
+  ],
+  "paths": {
+    "/books/get_markdown_outline": {
+      "get": {
+        "operationId": "get_markdown_outline",
+        "description": "【Markdown 标题树目录】读取目标 Markdown 文件的规范标题树。推荐作为首选阅读入口，用于定位 canonical section_path。",
+        "parameters": [
+          {
+            "name": "book_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "summary.md",
+                "status_card.md",
+                "world_model.md",
+                "style_guide.md",
+                "style_constraints_for_continuation.md",
+                "style_review.md",
+                "style_fingerprint.md",
+                "error_archive.md",
+                "brainstorm.md",
+                "master_outline.md",
+                "arc_outline.md",
+                "chapter_outline.md",
+                "chapter_draft.md",
+                "domain_rules.md"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回标题树和 etag"
+          },
+          "400": {
+            "description": "参数错误，或目标不是 markdown 文件"
+          },
+          "404": {
+            "description": "文件不存在"
+          }
+        }
+      }
+    },
+    "/books/get_markdown_section": {
+      "get": {
+        "operationId": "get_markdown_section",
+        "description": "【Markdown 区块提取】按规范 section_path 读取 Markdown 局部区块。建议先通过 get_markdown_outline 获取 canonical path。",
+        "parameters": [
+          {
+            "name": "book_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "summary.md",
+                "status_card.md",
+                "world_model.md",
+                "style_guide.md",
+                "style_constraints_for_continuation.md",
+                "style_review.md",
+                "style_fingerprint.md",
+                "error_archive.md",
+                "brainstorm.md",
+                "master_outline.md",
+                "arc_outline.md",
+                "chapter_outline.md",
+                "chapter_draft.md",
+                "domain_rules.md"
+              ]
+            }
+          },
+          {
+            "name": "section_path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "支持 JSON 数组字符串，或 > 分隔格式"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回目标区块和 etag"
+          },
+          "400": {
+            "description": "参数错误，或目标不是 markdown 文件"
+          },
+          "404": {
+            "description": "区块或文件不存在"
+          },
+          "409": {
+            "description": "SECTION_PATH_AMBIGUOUS，需改用标题树返回的 canonical path"
+          }
+        }
+      }
+    },
+    "/books/get_archive_range": {
+      "get": {
+        "operationId": "get_archive_range",
+        "description": "【核心档案小窗读取】按行读取核心文件窗口，单次上限 500 行，返回全文件 etag。仅用于补充上下文，不建议作为主阅读入口。",
+        "parameters": [
+          {
+            "name": "book_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "summary.md",
+                "status_card.md",
+                "world_model.md",
+                "style_guide.md",
+                "style_constraints_for_continuation.md",
+                "style_review.md",
+                "style_fingerprint.md",
+                "error_archive.md",
+                "domain_rules.md"
+              ]
+            }
+          },
+          {
+            "name": "start_line",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "end_line",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回窗口内容"
+          },
+          "400": {
+            "description": "行区间非法或参数错误"
+          },
+          "404": {
+            "description": "文件不存在"
+          }
+        }
+      }
+    },
+    "/books/get_file": {
+      "get": {
+        "operationId": "get_core_archive",
+        "description": "【整文件兜底读取】读取完整文件并返回 etag。推荐仅用于小文件或兜底，不作为 outline 流的主阅读入口。",
+        "parameters": [
+          {
+            "name": "book_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "summary.md",
+                "status_card.md",
+                "world_model.md",
+                "style_guide.md",
+                "style_constraints_for_continuation.md",
+                "style_review.md",
+                "style_fingerprint.md",
+                "error_archive.md",
+                "brainstorm.md",
+                "master_outline.md",
+                "arc_outline.md",
+                "chapter_outline.md",
+                "chapter_draft.md",
+                "domain_rules.md"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回文件内容及 etag"
+          },
+          "400": {
+            "description": "参数错误或缺少 book_name/book_id"
+          },
+          "404": {
+            "description": "文件不存在"
+          }
+        }
+      }
+    },
+    "/tools/extract_chapter_highlights": {
+      "post": {
+        "operationId": "extract_chapter_highlights",
+        "description": "【语义穿刺雷达】通过关键词提取章节高光片段，适配无换行长文本。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "chapter_index",
+                  "keywords"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "chapter_index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "keywords": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "context_sentences": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6,
+                    "default": 2
+                  },
+                  "context_lines": {
+                    "type": "integer",
+                    "description": "兼容别名，等价于 context_sentences"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回语义碎片"
+          },
+          "400": {
+            "description": "参数错误"
+          },
+          "404": {
+            "description": "章节不存在"
+          }
+        }
+      }
+    },
+    "/tools/validate_chapter_lengths": {
+      "post": {
+        "operationId": "validate_chapter_lengths",
+        "description": "【篇幅守门】只读统计 Markdown 草稿内每章正文篇幅，返回非空白字符、中文字符、硬下限/目标线/缺口。用于续写 Agent 写完单章后的篇幅校验，不写文件，不替代审核 Agent。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string",
+                    "default": "chapter_draft.md",
+                    "enum": [
+                      "chapter_draft.md"
+                    ],
+                    "description": "默认统计当前续写草稿 chapter_draft.md。"
+                  },
+                  "min_chars": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 2200,
+                    "description": "单章硬性下限，按非空白字符计数。低于该值必须原地扩写当前章。"
+                  },
+                  "target_chars": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 2500,
+                    "description": "单章目标线，按非空白字符计数。"
+                  },
+                  "max_chars": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 3200,
+                    "description": "单章建议上限，按非空白字符计数。"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回章节篇幅诊断。ok=false 表示至少一章低于 min_chars。"
+          },
+          "400": {
+            "description": "参数错误，或 file_name 越界。"
+          },
+          "404": {
+            "description": "书籍或 Markdown 文件不存在。"
+          }
+        }
+      }
+    },
+    "/api/draft/append_markdown_section": {
+      "post": {
+        "operationId": "draft_append_markdown_section",
+        "description": "Flat append tool for Dify Agents. It does not use a writes array. Append content as a complete new child Markdown section under section_path.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file_name",
+                  "section_path",
+                  "content",
+                  "base_etag",
+                  "origin"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string",
+                    "enum": [
+                      "summary.md",
+                      "status_card.md",
+                      "world_model.md",
+                      "style_guide.md",
+                      "style_constraints_for_continuation.md",
+                      "style_review.md",
+                      "style_fingerprint.md",
+                      "error_archive.md",
+                      "brainstorm.md",
+                      "master_outline.md",
+                      "arc_outline.md",
+                      "chapter_outline.md",
+                      "chapter_draft.md",
+                      "domain_rules.md"
+                    ]
+                  },
+                  "section_path": {
+                    "type": "string",
+                    "description": "Canonical Markdown section path, preferably copied from get_markdown_outline and joined with >, for example Root > Style > Rhythm."
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Complete Markdown fragment. For replace, include the target heading line itself. For append, include a complete new child section."
+                  },
+                  "base_etag": {
+                    "type": "string",
+                    "description": "Latest etag from get_markdown_outline, get_markdown_section, or get_core_archive."
+                  },
+                  "origin": {
+                    "type": "string",
+                    "enum": [
+                      "explicit_user_write"
+                    ],
+                    "description": "Hard write gate. Set only when the current user explicitly asks to write, update, archive, sync, or save a draft."
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Optional draft commit message."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "append_markdown_section succeeded and committed to draft/sandbox"
+          },
+          "400": {
+            "description": "Invalid payload or invalid Markdown patch"
+          },
+          "404": {
+            "description": "File or section not found"
+          },
+          "409": {
+            "description": "WRITE_CONFLICT or SECTION_PATH_AMBIGUOUS"
+          },
+          "428": {
+            "description": "Missing base_etag or missing explicit_user_write origin"
+          },
+          "500": {
+            "description": "Git or transactional write failed"
+          }
+        }
+      }
+    },
+    "/api/draft/replace_markdown_section": {
+      "post": {
+        "operationId": "draft_replace_markdown_section",
+        "description": "Flat replace tool for Dify Agents. It does not use a writes array. Replace the target section_path with content. Content must include the target heading line.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file_name",
+                  "section_path",
+                  "content",
+                  "base_etag",
+                  "origin"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string",
+                    "enum": [
+                      "summary.md",
+                      "status_card.md",
+                      "world_model.md",
+                      "style_guide.md",
+                      "style_constraints_for_continuation.md",
+                      "style_review.md",
+                      "style_fingerprint.md",
+                      "error_archive.md",
+                      "brainstorm.md",
+                      "master_outline.md",
+                      "arc_outline.md",
+                      "chapter_outline.md",
+                      "chapter_draft.md",
+                      "domain_rules.md"
+                    ]
+                  },
+                  "section_path": {
+                    "type": "string",
+                    "description": "Canonical Markdown section path, preferably copied from get_markdown_outline and joined with >, for example Root > Style > Rhythm."
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Complete Markdown fragment. For replace, include the target heading line itself. For append, include a complete new child section."
+                  },
+                  "base_etag": {
+                    "type": "string",
+                    "description": "Latest etag from get_markdown_outline, get_markdown_section, or get_core_archive."
+                  },
+                  "origin": {
+                    "type": "string",
+                    "enum": [
+                      "explicit_user_write"
+                    ],
+                    "description": "Hard write gate. Set only when the current user explicitly asks to write, update, archive, sync, or save a draft."
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Optional draft commit message."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "replace_markdown_section succeeded and committed to draft/sandbox"
+          },
+          "400": {
+            "description": "Invalid payload or invalid Markdown patch"
+          },
+          "404": {
+            "description": "File or section not found"
+          },
+          "409": {
+            "description": "WRITE_CONFLICT or SECTION_PATH_AMBIGUOUS"
+          },
+          "428": {
+            "description": "Missing base_etag or missing explicit_user_write origin"
+          },
+          "500": {
+            "description": "Git or transactional write failed"
+          }
+        }
+      }
+    },
+    "/api/draft/sync_markdown_sections": {
+      "post": {
+        "operationId": "draft_sync_markdown_sections",
+        "description": "Backward-compatible batch Markdown section write channel for draft/sandbox. Dify Agents should prefer draft_append_markdown_section or draft_replace_markdown_section.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "writes",
+                  "origin"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "本次草稿提交信息"
+                  },
+                  "origin": {
+                    "type": "string",
+                    "enum": [
+                      "explicit_user_write"
+                    ],
+                    "description": "Hard write gate. Set exactly to explicit_user_write only when the current user instruction explicitly asks to write, update, archive, or sync a draft. Read-only chat must not call this tool."
+                  },
+                  "writes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "file_name",
+                        "op",
+                        "section_path",
+                        "content",
+                        "base_etag"
+                      ],
+                      "properties": {
+                        "file_name": {
+                          "type": "string",
+                          "enum": [
+                            "summary.md",
+                            "status_card.md",
+                            "world_model.md",
+                            "style_guide.md",
+                            "style_constraints_for_continuation.md",
+                            "style_review.md",
+                            "style_fingerprint.md",
+                            "error_archive.md",
+                            "brainstorm.md",
+                            "master_outline.md",
+                            "arc_outline.md",
+                            "chapter_outline.md",
+                            "chapter_draft.md"
+                          ]
+                        },
+                        "op": {
+                          "type": "string",
+                          "enum": [
+                            "replace_section",
+                            "append_under_section"
+                          ]
+                        },
+                        "section_path": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "content": {
+                          "type": "string",
+                          "description": "replace_section 时建议包含目标标题本身；append_under_section 时应是完整新增子区块。"
+                        },
+                        "base_etag": {
+                          "type": "string",
+                          "description": "通过 get_markdown_outline / get_markdown_section / get_file 取得的最新 etag"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "写入成功，已提交到 draft/sandbox"
+          },
+          "400": {
+            "description": "参数错误、非法 patch 或目标不是 markdown 文件"
+          },
+          "404": {
+            "description": "文件或区块不存在"
+          },
+          "409": {
+            "description": "WRITE_CONFLICT 或 SECTION_PATH_AMBIGUOUS"
+          },
+          "428": {
+            "description": "缺少 base_etag（PRECONDITION_REQUIRED）"
+          },
+          "500": {
+            "description": "Git 或事务写入失败"
+          }
+        }
+      }
+    },
+    "/api/draft/sync_all": {
+      "post": {
+        "operationId": "draft_sync_all",
+        "description": "【兼容整文件写入通道】旧工作流兼容保留，不再推荐给 Markdown 主链路使用。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "writes"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "origin": {
+                    "type": "string",
+                    "default": "ai"
+                  },
+                  "write_scope": {
+                    "type": "string",
+                    "enum": [
+                      "generic",
+                      "world_core",
+                      "active_file_strict"
+                    ]
+                  },
+                  "active_file": {
+                    "type": "string"
+                  },
+                  "writes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "file_name",
+                        "op",
+                        "content",
+                        "base_etag"
+                      ],
+                      "properties": {
+                        "file_name": {
+                          "type": "string"
+                        },
+                        "op": {
+                          "type": "string",
+                          "enum": [
+                            "update",
+                            "append",
+                            "prepend"
+                          ]
+                        },
+                        "content": {
+                          "type": "string"
+                        },
+                        "base_etag": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "兼容写入成功"
+          },
+          "400": {
+            "description": "参数错误或 TARGET_PATH_FORBIDDEN"
+          },
+          "409": {
+            "description": "WRITE_CONFLICT"
+          },
+          "428": {
+            "description": "缺少 base_etag"
+          },
+          "500": {
+            "description": "Git 或事务写入失败"
+          }
+        }
+      }
+    },
+    "/api/draft/rollback": {
+      "post": {
+        "operationId": "draft_rollback",
+        "description": "【人类主权工具】将 draft/sandbox 回滚到指定 commit_hash。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "commit_hash"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "commit_hash": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "回滚成功"
+          },
+          "400": {
+            "description": "参数错误或缺少 commit_hash"
+          },
+          "404": {
+            "description": "草稿分支不存在"
+          },
+          "500": {
+            "description": "Git 操作失败"
+          }
+        }
+      }
+    },
+    "/api/draft/confirm": {
+      "post": {
+        "operationId": "draft_confirm",
+        "description": "【人类主权工具】将 draft/sandbox 合并到主线并删除草稿分支。",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "正史确权成功"
+          },
+          "400": {
+            "description": "参数错误或缺少 book_name/book_id"
+          },
+          "404": {
+            "description": "草稿分支或主线分支不存在"
+          },
+          "409": {
+            "description": "合并冲突（MERGE_CONFLICT）"
+          },
+          "500": {
+            "description": "Git 操作失败"
+          }
+        }
+      }
+    },
+    "/tools/generate_style_diagnostics": {
+      "post": {
+        "operationId": "generate_style_diagnostics",
+        "description": "??????????????????????????????????????????? Agent ??????????????????????????????",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "source_count": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "default": 8,
+                    "description": "???????????"
+                  },
+                  "draft_file": {
+                    "type": "string",
+                    "default": "chapter_draft.md",
+                    "description": "????????? chapter_draft.md??????? Markdown ???"
+                  },
+                  "draft_chapters": {
+                    "type": "string",
+                    "description": "?????????? 162,163,164??????????????"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "???? outputs?style_fingerprint.md?style_review.md?style_constraints_for_continuation.md?"
+          },
+          "400": {
+            "description": "?????? draft_file ???"
+          },
+          "404": {
+            "description": "??????"
+          }
+        }
+      }
+    },
+    "/tools/validate_domain_facts": {
+      "post": {
+        "operationId": "validate_domain_facts",
+        "description": "【领域规则守门】只读校验 Markdown 草稿是否违反 domain_rules.md 中由原文/世界模型/审核反馈生成的通用领域规则；不写文件，不内置题材硬编码。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string",
+                    "default": "chapter_draft.md",
+                    "enum": [
+                      "chapter_draft.md"
+                    ],
+                    "description": "默认校验当前续写草稿 chapter_draft.md。"
+                  },
+                  "rules_file": {
+                    "type": "string",
+                    "default": "domain_rules.md",
+                    "enum": [
+                      "domain_rules.md"
+                    ],
+                    "description": "领域规则文件。规则必须来自当前书籍原文、世界模型或审核反馈生成，不由代码硬编码。"
+                  },
+                  "markdown": {
+                    "type": "string",
+                    "description": "可选的内联 Markdown 片段。提供后校验该片段而不是 file_name，用于 world/review agent 对新生成规则做最小正反例烟测；最大 50000 字符。"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回领域规则校验结果。ok=false 表示存在解析错误或规则违例。"
+          },
+          "400": {
+            "description": "参数错误，或 file_name/rules_file 越界。"
+          },
+          "404": {
+            "description": "书籍、草稿文件或领域规则文件不存在。"
+          }
+        }
+      }
+    },
+    "/api/draft/replace_text": {
+      "post": {
+        "operationId": "draft_replace_text",
+        "description": "Exact local text replacement for Dify Agents. Use this for review rejects and bounded self-revision when only one sentence, phrase, or short paragraph should change. It does not use a writes array and must not add chapters.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file_name",
+                  "old_text",
+                  "new_text",
+                  "base_etag",
+                  "origin"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string",
+                    "enum": [
+                      "summary.md",
+                      "status_card.md",
+                      "world_model.md",
+                      "style_guide.md",
+                      "style_constraints_for_continuation.md",
+                      "style_review.md",
+                      "style_fingerprint.md",
+                      "error_archive.md",
+                      "brainstorm.md",
+                      "master_outline.md",
+                      "arc_outline.md",
+                      "chapter_outline.md",
+                      "chapter_draft.md",
+                      "domain_rules.md"
+                    ]
+                  },
+                  "old_text": {
+                    "type": "string",
+                    "description": "Exact text copied from the current file. Prefer one sentence or one short contiguous paragraph."
+                  },
+                  "new_text": {
+                    "type": "string",
+                    "description": "Replacement text for that exact span only. Do not include unrelated chapter content."
+                  },
+                  "occurrence": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Optional 1-based match index when old_text appears multiple times."
+                  },
+                  "base_etag": {
+                    "type": "string",
+                    "description": "Current file etag returned by get_markdown_outline, get_markdown_section, get_archive_range, or get_core_archive."
+                  },
+                  "origin": {
+                    "type": "string",
+                    "enum": [
+                      "explicit_user_write"
+                    ],
+                    "description": "Must be explicit_user_write."
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Text replacement committed to draft/sandbox."
+          }
+        }
+      }
+    }
+  }
+}

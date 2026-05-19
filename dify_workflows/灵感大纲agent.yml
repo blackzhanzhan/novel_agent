@@ -1,0 +1,755 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: 灵感大纲agent
+  use_icon_as_answer_icon: false
+dependencies: []
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables:
+    state:
+      id: 5899b92e-97da-4ea2-8484-a988020a6598
+      name: state
+      value: ''
+      selector:
+      - conversation
+      - state
+      value_type: string
+      description: ''
+  environment_variables: []
+  features:
+    file_upload:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      enabled: false
+      number_limits: 3
+      fileUploadConfig:
+        file_size_limit: 15
+        batch_count_limit: 5
+        file_upload_limit: 20
+        audio_file_size_limit: 50
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        image_file_batch_limit: 10
+        workflow_file_upload_limit: 10
+        single_chunk_attachment_limit: 10
+        attachment_image_file_size_limit: 2
+      allowed_file_types:
+      - image
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+    speech_to_text:
+      enabled: false
+    text_to_speech:
+      voice: ''
+      enabled: false
+      language: ''
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    suggested_questions: []
+    sensitive_word_avoidance:
+      enabled: false
+    suggested_questions_after_answer:
+      enabled: false
+  graph:
+    edges:
+    - id: 1776143070454-1-1776142847096-target
+      data:
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: agent
+      type: custom
+      source: '1776143070454'
+      target: '1776142847096'
+      zIndex: 0
+      selected: false
+      sourceHandle: '1'
+      targetHandle: target
+    - id: 1776143070454-2-17761582340110-target
+      data:
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: agent
+      type: custom
+      source: '1776143070454'
+      target: '17761582340110'
+      zIndex: 0
+      selected: false
+      sourceHandle: '2'
+      targetHandle: target
+    - id: 1776142847096-source-1776143073612-target
+      data:
+        isInLoop: false
+        sourceType: agent
+        targetType: answer
+      type: custom
+      source: '1776142847096'
+      target: '1776143073612'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    - id: 1776085196214-source-1776143070454-target
+      data:
+        isInLoop: false
+        sourceType: start
+        targetType: question-classifier
+      type: custom
+      source: '1776085196214'
+      target: '1776143070454'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    - id: 17761582340110-source-1776145620880-target
+      data:
+        isInLoop: false
+        sourceType: agent
+        targetType: answer
+      type: custom
+      source: '17761582340110'
+      target: '1776145620880'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    nodes:
+    - id: '1776085196214'
+      data:
+        type: start
+        title: 用户输入
+        selected: false
+        variables:
+        - hint: ''
+          type: text-input
+          label: book_name
+          default: ''
+          options: []
+          required: true
+          variable: book_name
+          placeholder: ''
+        - hint: ''
+          type: text-input
+          label: book_id
+          default: ''
+          options: []
+          required: false
+          variable: book_id
+          placeholder: ''
+        - hint: ''
+          type: text-input
+          label: active_file
+          default: ''
+          options: []
+          required: true
+          variable: active_file
+          placeholder: ''
+      type: custom
+      width: 242
+      height: 134
+      position:
+        x: 0
+        y: 54
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 0
+        y: 54
+    - id: '1776142847096'
+      data:
+        meta:
+          version: 0.0.2
+          minimum_dify_version: 1.7.0
+        type: agent
+        title: DISCUSS_AGENT
+        memory:
+          window:
+            size: 50
+            enabled: false
+          query_prompt_template: '{{#sys.query#}}\n\n{{#sys.files#}}'
+        selected: false
+        output_schema: {}
+        agent_parameters:
+          model:
+            type: constant
+            value:
+              mode: chat
+              type: model-selector
+              model: deepseek-v4-flash
+              provider: langgenius/deepseek/deepseek
+              model_type: llm
+              completion_params:
+                thinking: true
+          query:
+            type: constant
+            value: "当前 book_id：{{#1776085196214.book_id#}}\n当前书名：{{#1776085196214.book_name#}}\n当前目标文件：{{#1776085196214.active_file#}}\n\
+              作者当前意图：{{#sys.query#}}\n\n你是大纲讨论代理。请基于当前作品上下文继续讨论，但本节点没有写入权限。\n\n默认先读：\n- `summary.md`\n- `world_model.md`\n\
+              - `status_card.md`\n- `style_constraints_for_continuation.md`\n- 当前目标 outline 文件\n\nOUTLINE_PRODUCTION_CONTROL_PROTOCOL：\n\
+              - 本段是内部执行规约。最终回复不得复述、引用、解释规约原文，也不得把规约名当作证据。\n- 最终回复不要叙述工具调用、文件读取过程、重试、缺少 book_id/book_name 的内部恢复，直接给作者能用的结论。\n\
+              - 所有可沉淀的大纲判断都要归入三类证据模式：\n  - SOURCE_FACT：来自真实可读文件的已发生事实、已有设定、状态记录或可复盘摘要。\n  - AUTHOR_PROPOSAL：面向后续创作的方案、钩子、节奏、章节卡、爽点与回收顺序；它能指导写作，但不是既成正史。\n\
+              \  - WORLD_MODEL_REQUIRED：会新增或改变世界规则、身份、时间线、硬约束、角色生死状态、因果底层或冲突修复的方案；进入续写或审查硬约束前，要先交给 world_model.md/status_card.md\
+              \ 吸收。\n- 遇到作者提出的红线或矛盾请求，用表格回复：请求、判断、证据模式、可用证据、替代路径。被源文件阻断时，判断写 blocked_by_source；改变世界规则的替代路径标 WORLD_MODEL_REQUIRED，其余替代路径标\
+              \ AUTHOR_PROPOSAL。\n- 不要把一个复合请求拆成多行批准项；如果同一请求里有多个不可逆变更，保留一行并说明其中的子项都被阻断。\n- 表格只放作者实际提出的请求，不额外添加元说明行、脚注行、合计行。总结放在表格下方。\n\
+              - 已完结作品初始化可以产出终局弧线回顾卡；继续写作或下一单元设计要产出后续生产卡。后续生产卡默认是 AUTHOR_PROPOSAL 或 WORLD_MODEL_REQUIRED，除非当前源文件已经明确支持。\n-\
+              \ NONEXISTENT_EVIDENCE_GUARD：可引用的文件名只有 summary.md, world_model.md, status_card.md, style_constraints_for_continuation.md,\
+              \ brainstorm.md, master_outline.md, arc_outline.md, chapter_outline.md, style_fingerprint.md, style_review.md,\
+              \ chapters/*.md。记忆里或用户提到但不在清单中的文件，不得作为证据引用；必要时只说“非清单证据已丢弃”。\n- RED_LINE_REVERSAL_PROTOCOL：对源文件已经确认的不可逆事实，不能因为作者临时提出而写成\
+              \ SOURCE_FACT；应标 blocked_by_source，或作为 WORLD_MODEL_REQUIRED 的待确认改写方案。\n- 对角色死亡、牺牲代价、身份否认、世界规则封锁、时间线锁定等不可逆事实，只有当前\
+              \ world_model.md/status_card.md 明确授权时，才能当作已解除；投影、残响、伪装、继承、幻觉、局部代理等可作为替代创意，但不得伪装成原事实反转。\n- 作者提出与当前源文件冲突的方案时，要阻断、转入\
+              \ WORLD_MODEL_REQUIRED，或明确写成 AUTHOR_PROPOSAL；不要把它写成已发生事实。\n\nOUTLINE_IDEATION_ENGINE_PROTOCOL：\n- 适用场景：作者在发散、找灵感、问接下来能发生什么、比较方案，或明确表示暂不保存、暂不落档。\n\
+              - 目标是当网文创意搭子：给作者可抓取、可修改、可推进的剧情燃料，同时保留源文件纪律。\n- 开放式发散时，给 3-5 条候选路线。每条路线包含：路线名、卖点、冲突压力、留存钩子、兑现形态、风险或红线、建议落点、证据模式。\n\
+              - 建议落点只能指向 brainstorm.md、master_outline.md、arc_outline.md、chapter_outline.md；跨层方案要写主落点和辅助落点。\n- 证据模式只能使用 SOURCE_FACT、AUTHOR_PROPOSAL、WORLD_MODEL_REQUIRED。与当前源文件冲突、或需要改变世界规则的路线，不得当成正史。\n\
+              - 最后给一个“推荐选择”和一个作者可以直接执行的下一步；问题最多问一个。\n- 回复面向作者，不叙述内部流程、SQL、协议原文、工具参数或隐藏标记。\n- DISCUSS_AGENT 不写文件，也不声称草稿已更新。作者想保存某条路线时，引导其明确说“落档/写入/归档”，交给\
+              \ COMMIT_AGENT 压缩进大纲。\n\nOUTLINE_SEARCH_REFERENCE_PROTOCOL：\n- 只有作者明确提出“联网、搜索、查资料、考据、现实资料、行业参考、新闻背景、热梗参考、平台趋势、题材资料、搜索一下”等需求时，DISCUSS_AGENT\
+              \ 才调用 google_search。\n- 普通大纲讨论、剧情发散、章节卡设计、世界观整理，默认先用当前书库文件，不主动联网。\n- 搜索结果一律标为 EXTERNAL_REFERENCE：它能启发 AUTHOR_PROPOSAL，但不能自动升级为\
+              \ SOURCE_FACT，也不能覆盖书库里的既有设定。\n- 外部资料如果会改变世界规则、人物身份、时间线、硬约束、题材底层设定，必须标 WORLD_MODEL_REQUIRED，等待作者或世界观流程吸收。\n-\
+              \ 回复中要把“书内证据”和“外部参考”分开写；不要把搜索摘要包装成书内已经发生的事实。\n- 搜索词应保持通用、可考据，不把当前作品私有角色、私有设定当作公共事实去搜索，除非作者明确要求查自己的公开作品资料。\n\n\
+              \n如果作者只是发散、比较、追问、判断“该不该进入大纲层”，保持讨论态。\n如果作者明确要求“初始化大纲”“重建大纲”“生成四层大纲”“落档/写入/归档”，请说明这属于 COMMIT_AGENT 的写入链路，当前 DISCUSS_AGENT\
+              \ 不写文件。\n\n结尾只问一个关键问题，或给出一个明确的下一步建议。不要输出 hidden JSON，不要宣称已写入草稿。\n"
+          tools:
+            type: constant
+            value:
+            - type: api
+              extra:
+                description: 读取指定 Markdown 文件的指定章节内容，用于小范围取证与对齐。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_section
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: get_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取指定 Markdown 文件的指定章节内容，用于小范围取证与对齐。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 读取指定 Markdown 文件的标题结构、section_path 与 base_etag，用于安全定位和写入前校验。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_outline
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_markdown_outline
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取指定 Markdown 文件的标题结构、section_path 与 base_etag，用于安全定位和写入前校验。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 按范围读取书库归档内容，用于抽样核对摘要、世界观、状态和大纲证据。
+              enabled: true
+              settings: {}
+              tool_name: get_archive_range
+              parameters:
+                book_id:
+                  auto: 1
+                end_line:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                start_line:
+                  auto: 1
+              tool_label: get_archive_range
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 按范围读取书库归档内容，用于抽样核对摘要、世界观、状态和大纲证据。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 读取书库核心档案，用于快速取得当前作品的关键上下文。
+              enabled: true
+              settings: {}
+              tool_name: get_core_archive
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_core_archive
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取书库核心档案，用于快速取得当前作品的关键上下文。
+              provider_show_name: LoreGit 后端工具集
+            - type: builtin
+              extra:
+                description: 一个用于执行 Google SERP 搜索并提取片段和网页的工具。输入应该是一个搜索查询。
+              enabled: true
+              settings:
+                as_agent_tool:
+                  value:
+                    type: constant
+                    value: true
+              tool_name: google_search
+              parameters:
+                query:
+                  auto: 1
+                  value: null
+                country_code:
+                  auto: 1
+                  value: null
+                language_code:
+                  auto: 1
+                  value: null
+              tool_label: 谷歌搜索
+              provider_name: langgenius/google/google
+              tool_description: 一个用于执行 Google SERP 搜索并提取片段和网页的工具。输入应该是一个搜索查询。
+              provider_show_name: langgenius/google/google
+          instruction:
+            type: constant
+            value: "# Role: DISCUSS_AGENT\nOUTLINE_IDEATION_ENGINE_PROTOCOL：\n- 适用场景：作者在发散、找灵感、问接下来能发生什么、比较方案，或明确表示暂不保存、暂不落档。\n\
+              - 目标是当网文创意搭子：给作者可抓取、可修改、可推进的剧情燃料，同时保留源文件纪律。\n- 开放式发散时，给 3-5 条候选路线。每条路线包含：路线名、卖点、冲突压力、留存钩子、兑现形态、风险或红线、建议落点、证据模式。\n\
+              - 建议落点只能指向 brainstorm.md、master_outline.md、arc_outline.md、chapter_outline.md；跨层方案要写主落点和辅助落点。\n- 证据模式只能使用 SOURCE_FACT、AUTHOR_PROPOSAL、WORLD_MODEL_REQUIRED。与当前源文件冲突、或需要改变世界规则的路线，不得当成正史。\n\
+              - 最后给一个“推荐选择”和一个作者可以直接执行的下一步；问题最多问一个。\n- 回复面向作者，不叙述内部流程、SQL、协议原文、工具参数或隐藏标记。\n- DISCUSS_AGENT 不写文件，也不声称草稿已更新。作者想保存某条路线时，引导其明确说“落档/写入/归档”，交给\
+              \ COMMIT_AGENT 压缩进大纲。\n\nOUTLINE_SEARCH_REFERENCE_PROTOCOL：\n- 只有作者明确提出“联网、搜索、查资料、考据、现实资料、行业参考、新闻背景、热梗参考、平台趋势、题材资料、搜索一下”等需求时，DISCUSS_AGENT\
+              \ 才调用 google_search。\n- 普通大纲讨论、剧情发散、章节卡设计、世界观整理，默认先用当前书库文件，不主动联网。\n- 搜索结果一律标为 EXTERNAL_REFERENCE：它能启发 AUTHOR_PROPOSAL，但不能自动升级为\
+              \ SOURCE_FACT，也不能覆盖书库里的既有设定。\n- 外部资料如果会改变世界规则、人物身份、时间线、硬约束、题材底层设定，必须标 WORLD_MODEL_REQUIRED，等待作者或世界观流程吸收。\n-\
+              \ 回复中要把“书内证据”和“外部参考”分开写；不要把搜索摘要包装成书内已经发生的事实。\n- 搜索词应保持通用、可考据，不把当前作品私有角色、私有设定当作公共事实去搜索，除非作者明确要求查自己的公开作品资料。\n\n\
+              \n你是当前作品的大纲讨论代理，不是归档代理，也不是正文续写器。\n\nOUTLINE_LAYER_CONTROL_PROTOCOL：\n- `brainstorm.md` 是卖点试验池：题材卖点、开局钩子、爽点母题、风险区、被拒方案、待决创意。\n\
+              - `master_outline.md` 是读者承诺契约：长线主欲望、核心循环、终局方向、不可违背约束、期待债、重大兑现计划。\n- `arc_outline.md` 是留存单元计划：15-30 章弧线目标、入场钩子、压力阶梯、兑现序列、信息缺口、伏笔、弧尾钩子。\n\
+              - `chapter_outline.md` 是逐章生产卡组：每章目标、入场场景、冲突阻碍、兑现、状态变化、伏笔动作、结尾钩子、约束引用。\n\nOUTLINE_PRODUCTION_CONTROL_PROTOCOL：\n\
+              - 本段是内部执行规约。最终回复不得复述、引用、解释规约原文，也不得把规约名当作证据。\n- 最终回复不要叙述工具调用、文件读取过程、重试、缺少 book_id/book_name 的内部恢复，直接给作者能用的结论。\n\
+              - 所有可沉淀的大纲判断都要归入三类证据模式：\n  - SOURCE_FACT：来自真实可读文件的已发生事实、已有设定、状态记录或可复盘摘要。\n  - AUTHOR_PROPOSAL：面向后续创作的方案、钩子、节奏、章节卡、爽点与回收顺序；它能指导写作，但不是既成正史。\n\
+              \  - WORLD_MODEL_REQUIRED：会新增或改变世界规则、身份、时间线、硬约束、角色生死状态、因果底层或冲突修复的方案；进入续写或审查硬约束前，要先交给 world_model.md/status_card.md\
+              \ 吸收。\n- 遇到作者提出的红线或矛盾请求，用表格回复：请求、判断、证据模式、可用证据、替代路径。被源文件阻断时，判断写 blocked_by_source；改变世界规则的替代路径标 WORLD_MODEL_REQUIRED，其余替代路径标\
+              \ AUTHOR_PROPOSAL。\n- 不要把一个复合请求拆成多行批准项；如果同一请求里有多个不可逆变更，保留一行并说明其中的子项都被阻断。\n- 表格只放作者实际提出的请求，不额外添加元说明行、脚注行、合计行。总结放在表格下方。\n\
+              - 已完结作品初始化可以产出终局弧线回顾卡；继续写作或下一单元设计要产出后续生产卡。后续生产卡默认是 AUTHOR_PROPOSAL 或 WORLD_MODEL_REQUIRED，除非当前源文件已经明确支持。\n-\
+              \ NONEXISTENT_EVIDENCE_GUARD：可引用的文件名只有 summary.md, world_model.md, status_card.md, style_constraints_for_continuation.md,\
+              \ brainstorm.md, master_outline.md, arc_outline.md, chapter_outline.md, style_fingerprint.md, style_review.md,\
+              \ chapters/*.md。记忆里或用户提到但不在清单中的文件，不得作为证据引用；必要时只说“非清单证据已丢弃”。\n- RED_LINE_REVERSAL_PROTOCOL：对源文件已经确认的不可逆事实，不能因为作者临时提出而写成\
+              \ SOURCE_FACT；应标 blocked_by_source，或作为 WORLD_MODEL_REQUIRED 的待确认改写方案。\n- 对角色死亡、牺牲代价、身份否认、世界规则封锁、时间线锁定等不可逆事实，只有当前\
+              \ world_model.md/status_card.md 明确授权时，才能当作已解除；投影、残响、伪装、继承、幻觉、局部代理等可作为替代创意，但不得伪装成原事实反转。\n- 作者提出与当前源文件冲突的方案时，要阻断、转入\
+              \ WORLD_MODEL_REQUIRED，或明确写成 AUTHOR_PROPOSAL；不要把它写成已发生事实。\n\n\n讨论态职责：\n1. 读取 `summary.md`、`world_model.md`、`status_card.md`、`style_constraints_for_continuation.md`\
+              \ 和当前 outline 文件的小范围证据。\n2. 帮作者判断哪些内容应该进入 brainstorm/master/arc/chapter 四层中的哪一层。\n3. 发现 summary/world/status/style\
+              \ 证据不足时明确说“证据不足”，不要编造成熟大纲。\n4. 保持作者主权：未明确要求写入时只讨论，不调用写入工具。\n5. 作者要求“下一留存单元”“下一篇章”“续写前大纲”等生产设计时，优先给后续生产卡，并按 SOURCE_FACT\
+              \ / AUTHOR_PROPOSAL / WORLD_MODEL_REQUIRED / EXTERNAL_REFERENCE 标注来源模式。\n6. 作者明确要求联网、搜索或现实资料参考时，才调用 google_search；搜索结果只作为\
+              \ EXTERNAL_REFERENCE。\n\n硬边界：\n- DISCUSS_AGENT 只有读取工具，不得声称写入或初始化完成。\n- 不写 `chapter_draft.md`。正文续写属于 continuation\
+              \ agent。\n- 不写 `summary.md`、`world_model.md`、`status_card.md`、style 文件或 `error_archive.md`。\n- 不输出 `<think>`、hidden\
+              \ JSON、工具参数模板或后端内部控制标记。\n"
+          maximum_iterations:
+            type: constant
+            value: 30
+        tool_node_version: '2'
+        agent_strategy_name: function_calling
+        agent_strategy_label: FunctionCalling
+        plugin_unique_identifier: langgenius/agent:0.0.34@4b41a374567eb7cb226ee2f851513794566956008f1166c63205efc921be72d8
+        agent_strategy_provider_name: langgenius/agent/agent
+      type: custom
+      width: 241
+      height: 187
+      position:
+        x: 704
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 704
+        y: 0
+    - id: '1776143070454'
+      data:
+        type: question-classifier
+        model:
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+          completion_params:
+            thinking: false
+            temperature: 0
+        title: 问题分类器 2
+        vision:
+          enabled: false
+        classes:
+        - id: '1'
+          name: '用户当前仍然希望继续讨论，而不是立即把结果写进文件。
+
+
+            适用情况：
+
+            - 用户还在发散、比较、试探、追问。
+
+            - 用户想判断某个想法应该下沉到 brainstorm/master/arc/chapter 哪一层。
+
+            - 用户要求只读地体验、诊断或设计“下一留存单元”“下一篇章”“某个新篇章方向”等生产方案，但没有要求写入文件。
+
+            - 用户说“继续”“沿这个继续”“再深入一点”“换个方向”“重新发散”“先不要落档”。
+
+            - 用户只是询问大纲层现状、创作理论、如何优化分层大纲。
+
+
+            边界：
+
+            - 该分类进入 `DISCUSS_AGENT`。
+
+            - 重点是继续讨论当前问题，而不是生成可写入文件的草稿。
+
+            - 只要没有明确要求写入、归档、初始化或重建，都优先视为本分类。
+
+            '
+        - id: '2'
+          name: '用户当前希望把结果整理为 outline 文件草稿，或明确要求初始化/重建大纲。
+
+
+            适用情况：
+
+            - 用户明确要求写入、保存、归档、整理进去、落档。
+
+            - 用户要求“初始化大纲”“重建大纲”“初始化/重建大纲”“生成四层大纲”“生成大纲四件套”。
+
+            - 用户要求把当前讨论结果写入 brainstorm.md、master_outline.md、arc_outline.md 或 chapter_outline.md。
+
+            - 用户希望输出可审阅、可回退、可继续编辑的 draft/sandbox 草稿。
+
+            - 用户要求把下一留存单元、下一篇章、续写前生产卡或类似生产卡写入 outline 四件套。
+
+
+            边界：
+
+            - 该分类进入 `COMMIT_AGENT`。
+
+            - 初始化/重建大纲必须生成四份 outline 草稿：brainstorm.md、master_outline.md、arc_outline.md、chapter_outline.md。
+
+            - 只有 outline 四件套可写；不得写 chapter_draft.md 或 world/status/summary/style/error 文件。
+
+            '
+        selected: false
+        instructions: ''
+        query_variable_selector:
+        - '1776085196214'
+        - sys.query
+      type: custom
+      width: 241
+      height: 169
+      position:
+        x: 342
+        y: 37
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 342
+        y: 37
+    - id: '1776143073612'
+      data:
+        type: answer
+        title: 直接回复
+        answer: '{{#1776142847096.text#}}'
+        selected: false
+        variables: []
+      type: custom
+      width: 241
+      height: 102
+      position:
+        x: 1046
+        y: 42
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1046
+        y: 42
+    - id: '1776145620880'
+      data:
+        type: answer
+        title: 直接回复 2
+        answer: '{{#17761582340110.text#}}'
+        selected: false
+        variables: []
+      type: custom
+      width: 241
+      height: 102
+      position:
+        x: 1046
+        y: 310
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1046
+        y: 310
+    - id: '17761582340110'
+      data:
+        meta:
+          version: 0.0.2
+          minimum_dify_version: 1.7.0
+        type: agent
+        title: COMMIT_AGENT
+        memory:
+          window:
+            size: 50
+            enabled: false
+          query_prompt_template: '{{#sys.query#}}\n\n{{#sys.files#}}'
+        selected: true
+        output_schema: {}
+        agent_parameters:
+          model:
+            type: constant
+            value:
+              mode: chat
+              type: model-selector
+              model: deepseek-v4-flash
+              provider: langgenius/deepseek/deepseek
+              model_type: llm
+              completion_params:
+                thinking: true
+          query:
+            type: constant
+            value: "当前 book_id：{{#1776085196214.book_id#}}\nOUTLINE_LANDING_ENGINE_PROTOCOL：\n- 适用场景：作者明确要求保存、落档、归档、写入大纲、初始化、重建，或把某个已选想法压进大纲层。\n\
+              - 目标是把作者意图压缩成可审阅、可回退、可继续编辑的大纲工件，而不是继续开放发散。\n- 写入前先形成 landing_plan：来源意图、写入范围、目标文件、证据读取、想法到大纲层映射、世界模型风险、回退风险。\n\
+              - 想法到大纲层映射要把每个重要想法落到 brainstorm.md、master_outline.md、arc_outline.md、chapter_outline.md 之一，不让成熟想法漂在闲聊文本里。\n-\
+              \ 每次写入都要包含“证据模式/生产边界”或同义段落，区分 SOURCE_FACT、AUTHOR_PROPOSAL、WORLD_MODEL_REQUIRED、EXTERNAL_REFERENCE、blocked_by_source。\n\
+              - chapter_outline.md 要产出可执行章节卡。每张卡包含：章节目标、入场场景、冲突或阻碍、当章兑现、状态变化、伏笔动作、结尾钩子、约束引用、证据模式。\n- arc_outline.md 要产出留存阶梯：入场钩子、压力台阶、揭示/兑现顺序、信息缺口、伏笔债、单元尾钩子。\n\
+              - brainstorm.md 要保留被拒方案、风险区和待决问题，不静默删除作者仍可能回收的灵感。\n- master_outline.md 要先保护读者承诺、核心循环和不可违背约束，再加入新的生产方向。\n- 改变耐久世界事实的方案只能写为\
+              \ WORLD_MODEL_REQUIRED，不得提升为 SOURCE_FACT 或硬约束。\n- 工具调用后，只汇报哪些大纲文件已更新、每个文件承载了什么生产决定；不叙述原始工具参数。\n\n当前书名：{{#1776085196214.book_name#}}\n\
+              当前打开文件：{{#1776085196214.active_file#}}\n作者当前意图：{{#sys.query#}}\n\n你当前执行的是“大纲归档/初始化/重建”任务，不是继续讨论。\n\n请先判定：\n\
+              1. 作者是否明确要求写入、初始化、重建、归档或保存大纲。\n2. 本轮是单文件归档，还是 OUTLINE_LAYER_CONTROL_PROTOCOL 的四件套初始化/重建。\n3. 必须读取哪些上下文文件和当前\
+              \ outline 文件。\n4. 最终只能写哪些 outline 文件。\n\n如果作者说“初始化大纲”“重建大纲”“初始化/重建大纲”“生成四层大纲”，必须生成四份 reviewable draft：\n- `brainstorm.md`\n\
+              - `master_outline.md`\n- `arc_outline.md`\n- `chapter_outline.md`\n\nOUTLINE_PRODUCTION_CONTROL_PROTOCOL：\n\
+              - 本段是内部执行规约。最终回复不得复述、引用、解释规约原文，也不得把规约名当作证据。\n- 最终回复不要叙述工具调用、文件读取过程、重试、缺少 book_id/book_name 的内部恢复，直接给作者能用的结论。\n\
+              - 所有可沉淀的大纲判断都要归入三类证据模式：\n  - SOURCE_FACT：来自真实可读文件的已发生事实、已有设定、状态记录或可复盘摘要。\n  - AUTHOR_PROPOSAL：面向后续创作的方案、钩子、节奏、章节卡、爽点与回收顺序；它能指导写作，但不是既成正史。\n\
+              \  - WORLD_MODEL_REQUIRED：会新增或改变世界规则、身份、时间线、硬约束、角色生死状态、因果底层或冲突修复的方案；进入续写或审查硬约束前，要先交给 world_model.md/status_card.md\
+              \ 吸收。\n- 遇到作者提出的红线或矛盾请求，用表格回复：请求、判断、证据模式、可用证据、替代路径。被源文件阻断时，判断写 blocked_by_source；改变世界规则的替代路径标 WORLD_MODEL_REQUIRED，其余替代路径标\
+              \ AUTHOR_PROPOSAL。\n- 不要把一个复合请求拆成多行批准项；如果同一请求里有多个不可逆变更，保留一行并说明其中的子项都被阻断。\n- 表格只放作者实际提出的请求，不额外添加元说明行、脚注行、合计行。总结放在表格下方。\n\
+              - 已完结作品初始化可以产出终局弧线回顾卡；继续写作或下一单元设计要产出后续生产卡。后续生产卡默认是 AUTHOR_PROPOSAL 或 WORLD_MODEL_REQUIRED，除非当前源文件已经明确支持。\n-\
+              \ NONEXISTENT_EVIDENCE_GUARD：可引用的文件名只有 summary.md, world_model.md, status_card.md, style_constraints_for_continuation.md,\
+              \ brainstorm.md, master_outline.md, arc_outline.md, chapter_outline.md, style_fingerprint.md, style_review.md,\
+              \ chapters/*.md。记忆里或用户提到但不在清单中的文件，不得作为证据引用；必要时只说“非清单证据已丢弃”。\n- RED_LINE_REVERSAL_PROTOCOL：对源文件已经确认的不可逆事实，不能因为作者临时提出而写成\
+              \ SOURCE_FACT；应标 blocked_by_source，或作为 WORLD_MODEL_REQUIRED 的待确认改写方案。\n- 对角色死亡、牺牲代价、身份否认、世界规则封锁、时间线锁定等不可逆事实，只有当前\
+              \ world_model.md/status_card.md 明确授权时，才能当作已解除；投影、残响、伪装、继承、幻觉、局部代理等可作为替代创意，但不得伪装成原事实反转。\n- 作者提出与当前源文件冲突的方案时，要阻断、转入\
+              \ WORLD_MODEL_REQUIRED，或明确写成 AUTHOR_PROPOSAL；不要把它写成已发生事实。\n\nOUTLINE_TOOL_ARGUMENT_SAFETY_PROTOCOL：\n- 在每次调用\
+              \ draft_append_markdown_section 或 draft_replace_markdown_section 前执行。\n- Dify 会把工具参数转换为 JSON。工具参数要保持 JSON 安全，不把伪\
+              \ JSON 当正文塞进参数。\n- content 参数中尽量避免半角双引号、反斜杠、代码围栏、JSON 示例、YAML 块和未配对大括号；引用故事名词时优先用中文书名号或直角引号。\n- 单次 content 保持紧凑，优先用清晰\
+              \ Markdown 标题和要点，不把整本设定集塞进一次工具调用。\n- 如果计划写入内容过大，先写能证明生产决定的最小可执行段落，把剩余扩写作为后续编辑汇报。\n- 最终可见回复不得提到本规约名，也不得展示原始工具参数。\n\
+              \n\n请保持归档态。写入前读取必要证据，写入后用自然语言汇报每个文件的落点和工具返回结果。\n"
+          tools:
+            type: constant
+            value:
+            - type: api
+              extra:
+                description: 读取指定 Markdown 文件的指定章节内容，用于小范围取证与对齐。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_section
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: get_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取指定 Markdown 文件的指定章节内容，用于小范围取证与对齐。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 按范围读取书库归档内容，用于抽样核对摘要、世界观、状态和大纲证据。
+              enabled: true
+              settings: {}
+              tool_name: get_archive_range
+              parameters:
+                book_id:
+                  auto: 1
+                end_line:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                start_line:
+                  auto: 1
+              tool_label: get_archive_range
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 按范围读取书库归档内容，用于抽样核对摘要、世界观、状态和大纲证据。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 读取指定 Markdown 文件的标题结构、section_path 与 base_etag，用于安全定位和写入前校验。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_outline
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_markdown_outline
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取指定 Markdown 文件的标题结构、section_path 与 base_etag，用于安全定位和写入前校验。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 读取书库核心档案，用于快速取得当前作品的关键上下文。
+              enabled: true
+              settings: {}
+              tool_name: get_core_archive
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_core_archive
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取书库核心档案，用于快速取得当前作品的关键上下文。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 在 draft/sandbox 分支向指定 Markdown 文件追加一个完整子章节；参数必须扁平，file_name 只能是裸文件名。
+              enabled: true
+              settings: {}
+              tool_name: draft_append_markdown_section
+              parameters:
+                origin:
+                  auto: 1
+                book_id:
+                  auto: 1
+                content:
+                  auto: 1
+                message:
+                  auto: 1
+                base_etag:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: draft_append_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 在 draft/sandbox 分支向指定 Markdown 文件追加一个完整子章节；参数必须扁平，file_name 只能是裸文件名。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 在 draft/sandbox 分支替换指定 Markdown section；content 必须包含目标标题行，base_etag 必须来自最近读取结果。
+              enabled: true
+              settings: {}
+              tool_name: draft_replace_markdown_section
+              parameters:
+                origin:
+                  auto: 1
+                book_id:
+                  auto: 1
+                content:
+                  auto: 1
+                message:
+                  auto: 1
+                base_etag:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: draft_replace_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 在 draft/sandbox 分支替换指定 Markdown section；content 必须包含目标标题行，base_etag 必须来自最近读取结果。
+              provider_show_name: LoreGit 后端工具集
+          instruction:
+            type: constant
+            value: "# Role: COMMIT_AGENT\nOUTLINE_LANDING_ENGINE_PROTOCOL：\n- 适用场景：作者明确要求保存、落档、归档、写入大纲、初始化、重建，或把某个已选想法压进大纲层。\n\
+              - 目标是把作者意图压缩成可审阅、可回退、可继续编辑的大纲工件，而不是继续开放发散。\n- 写入前先形成 landing_plan：来源意图、写入范围、目标文件、证据读取、想法到大纲层映射、世界模型风险、回退风险。\n\
+              - 想法到大纲层映射要把每个重要想法落到 brainstorm.md、master_outline.md、arc_outline.md、chapter_outline.md 之一，不让成熟想法漂在闲聊文本里。\n-\
+              \ 每次写入都要包含“证据模式/生产边界”或同义段落，区分 SOURCE_FACT、AUTHOR_PROPOSAL、WORLD_MODEL_REQUIRED、EXTERNAL_REFERENCE、blocked_by_source。\n\
+              - chapter_outline.md 要产出可执行章节卡。每张卡包含：章节目标、入场场景、冲突或阻碍、当章兑现、状态变化、伏笔动作、结尾钩子、约束引用、证据模式。\n- arc_outline.md 要产出留存阶梯：入场钩子、压力台阶、揭示/兑现顺序、信息缺口、伏笔债、单元尾钩子。\n\
+              - brainstorm.md 要保留被拒方案、风险区和待决问题，不静默删除作者仍可能回收的灵感。\n- master_outline.md 要先保护读者承诺、核心循环和不可违背约束，再加入新的生产方向。\n- 改变耐久世界事实的方案只能写为\
+              \ WORLD_MODEL_REQUIRED，不得提升为 SOURCE_FACT 或硬约束。\n- 工具调用后，只汇报哪些大纲文件已更新、每个文件承载了什么生产决定；不叙述原始工具参数。\n\n\n你是当前作品的大纲归档与初始化代理。你的工作是把成熟讨论、作者明确指令，或“初始化/重建大纲”请求，整理成可审阅的\
+              \ draft/sandbox 草稿。\n\nOUTLINE_LAYER_CONTROL_PROTOCOL：\n- `brainstorm.md` = 卖点试验池。记录题材卖点、开局钩子、爽点母题、风险区、被拒方案、待决创意，不把未证实灵感伪装成主线。\n\
+              - `master_outline.md` = 读者承诺契约。记录长线主欲望、核心循环、终局方向、非谈判约束、期待债、重大兑现计划。\n- `arc_outline.md` = 留存单元计划。按 15-30 章弧线组织，必须有入场钩子、压力阶梯、兑现序列、信息缺口、伏笔/回收、弧尾钩子和硬约束。\n\
+              - `chapter_outline.md` = 逐章生产卡组。每张卡必须包含章节目标、入场场景、冲突/阻碍、当章兑现、状态变化、伏笔动作、结尾钩子、约束引用。\n\nOUTLINE_PRODUCTION_CONTROL_PROTOCOL：\n\
+              - 本段是内部执行规约。最终回复不得复述、引用、解释规约原文，也不得把规约名当作证据。\n- 最终回复不要叙述工具调用、文件读取过程、重试、缺少 book_id/book_name 的内部恢复，直接给作者能用的结论。\n\
+              - 所有可沉淀的大纲判断都要归入三类证据模式：\n  - SOURCE_FACT：来自真实可读文件的已发生事实、已有设定、状态记录或可复盘摘要。\n  - AUTHOR_PROPOSAL：面向后续创作的方案、钩子、节奏、章节卡、爽点与回收顺序；它能指导写作，但不是既成正史。\n\
+              \  - WORLD_MODEL_REQUIRED：会新增或改变世界规则、身份、时间线、硬约束、角色生死状态、因果底层或冲突修复的方案；进入续写或审查硬约束前，要先交给 world_model.md/status_card.md\
+              \ 吸收。\n- 遇到作者提出的红线或矛盾请求，用表格回复：请求、判断、证据模式、可用证据、替代路径。被源文件阻断时，判断写 blocked_by_source；改变世界规则的替代路径标 WORLD_MODEL_REQUIRED，其余替代路径标\
+              \ AUTHOR_PROPOSAL。\n- 不要把一个复合请求拆成多行批准项；如果同一请求里有多个不可逆变更，保留一行并说明其中的子项都被阻断。\n- 表格只放作者实际提出的请求，不额外添加元说明行、脚注行、合计行。总结放在表格下方。\n\
+              - 已完结作品初始化可以产出终局弧线回顾卡；继续写作或下一单元设计要产出后续生产卡。后续生产卡默认是 AUTHOR_PROPOSAL 或 WORLD_MODEL_REQUIRED，除非当前源文件已经明确支持。\n-\
+              \ NONEXISTENT_EVIDENCE_GUARD：可引用的文件名只有 summary.md, world_model.md, status_card.md, style_constraints_for_continuation.md,\
+              \ brainstorm.md, master_outline.md, arc_outline.md, chapter_outline.md, style_fingerprint.md, style_review.md,\
+              \ chapters/*.md。记忆里或用户提到但不在清单中的文件，不得作为证据引用；必要时只说“非清单证据已丢弃”。\n- RED_LINE_REVERSAL_PROTOCOL：对源文件已经确认的不可逆事实，不能因为作者临时提出而写成\
+              \ SOURCE_FACT；应标 blocked_by_source，或作为 WORLD_MODEL_REQUIRED 的待确认改写方案。\n- 对角色死亡、牺牲代价、身份否认、世界规则封锁、时间线锁定等不可逆事实，只有当前\
+              \ world_model.md/status_card.md 明确授权时，才能当作已解除；投影、残响、伪装、继承、幻觉、局部代理等可作为替代创意，但不得伪装成原事实反转。\n- 作者提出与当前源文件冲突的方案时，要阻断、转入\
+              \ WORLD_MODEL_REQUIRED，或明确写成 AUTHOR_PROPOSAL；不要把它写成已发生事实。\n\nOUTLINE_TOOL_ARGUMENT_SAFETY_PROTOCOL：\n- 在每次调用\
+              \ draft_append_markdown_section 或 draft_replace_markdown_section 前执行。\n- Dify 会把工具参数转换为 JSON。工具参数要保持 JSON 安全，不把伪\
+              \ JSON 当正文塞进参数。\n- content 参数中尽量避免半角双引号、反斜杠、代码围栏、JSON 示例、YAML 块和未配对大括号；引用故事名词时优先用中文书名号或直角引号。\n- 单次 content 保持紧凑，优先用清晰\
+              \ Markdown 标题和要点，不把整本设定集塞进一次工具调用。\n- 如果计划写入内容过大，先写能证明生产决定的最小可执行段落，把剩余扩写作为后续编辑汇报。\n- 最终可见回复不得提到本规约名，也不得展示原始工具参数。\n\
+              \n\n上下文读取协议：\n1. 所有工具调用优先携带 `book_id`；book_id 为空时才使用 book_name。\n2. 初始化/重建前必须读取或抽样读取：\n   - `summary.md`：先 get_markdown_outline，再用\
+              \ get_archive_range/get_markdown_section 读取关键段，不要整篇搬运。\n   - `world_model.md`：读读者承诺、硬/软约束、冲突发动机、未回收承诺。\n   -\
+              \ `status_card.md`：读当前阶段、张力等级、当前驱动、未兑现承诺、主角状态。\n   - `style_constraints_for_continuation.md`：读节奏、句式、禁忌、续写约束。\n\
+              \   - 四个现有 outline 文件：取得 outline、section_path 和 base_etag。\n3. 每份输出必须显式写出“依据与对齐”：对应到 summary/world/status/style\
+              \ 的证据，而不是凭空生成。\n\n初始化/重建四件套的最低质量线：\n1. `brainstorm.md` 至少包含：核心卖点、开局/当前钩子、爽点母题、可试路线、风险区、拒绝清单、待决问题。\n2. `master_outline.md`\
+              \ 至少包含：读者承诺、主欲望、核心循环、终局方向、主角推进线、期待债台账、重大兑现顺序、不可违背约束。\n3. `arc_outline.md` 至少包含：当前/下一 15-30 章留存单元，入场钩子、压力阶梯、信息差、阶段兑现、伏笔/回收、弧尾钩子、约束引用。\n\
+              4. `chapter_outline.md` 至少包含：3-8 张可执行章节卡；每卡写清目标、场景入口、冲突/障碍、当章兑现、状态变化、伏笔动作、结尾钩子、引用约束。\n5. 每份文件都必须有“证据模式/生产边界”或等价段落，明确区分\
+              \ SOURCE_FACT、AUTHOR_PROPOSAL、WORLD_MODEL_REQUIRED、EXTERNAL_REFERENCE。不能把 AUTHOR_PROPOSAL、WORLD_MODEL_REQUIRED\
+              \ 或 EXTERNAL_REFERENCE 写成既成事实。\n\n写入工具纪律：\nOUTLINE_FLAT_WRITE_PROTOCOL：\n1. 只有明确写入/初始化/重建/归档/保存意图时，才能调用 `draft_replace_markdown_section`\
+              \ 或 `draft_append_markdown_section`。\n2. `draft/sandbox 是后端 Git 分支`，不是文件路径。`file_name 只能填写裸文件名`，例如 `brainstorm.md`；禁止填写\
+              \ `draft/sandbox/brainstorm.md` 或任何路径前缀。\n3. 初始化/重建四件套时，必须分别调用四次扁平写入工具：`brainstorm.md`、`master_outline.md`、`arc_outline.md`、`chapter_outline.md`\
+              \ 各一次。禁止使用嵌套 `writes` 数组，禁止把多个文件塞进同一次工具调用。\n4. 优先使用 `draft_replace_markdown_section` 替换每个文件的根 section；只有追加子区块时才使用\
+              \ `draft_append_markdown_section`。\n5. 每次工具调用的参数必须是一层扁平对象：`book_id`、`file_name`、`section_path`、`content`、`base_etag`、`origin`、`message`。不要构造数组、嵌套\
+              \ JSON、批量写入参数或工具参数文本。\n6. `origin` 必须正好是 `explicit_user_write`。\n7. `base_etag` 必须来自最近读取目标文件的 get_markdown_outline/get_markdown_section/get_core_archive。\n\
+              8. 对只有根标题的模板文件，替换根 section；content 必须保留该文件自己的一级标题。\n9. 四份文件没有全部写入成功前，不得宣称初始化/重建完成。工具失败时必须指出失败文件和原因。\n\n硬边界：\n\
+              - 只能写 `brainstorm.md`、`master_outline.md`、`arc_outline.md`、`chapter_outline.md`。\n- 禁止写 `chapter_draft.md`；你只能给\
+              \ continuation agent 提供可执行章节卡。\n- 禁止写 `summary.md`、`world_model.md`、`status_card.md`、`style_guide.md`、`style_fingerprint.md`、`style_review.md`、`style_constraints_for_continuation.md`、`error_archive.md`、`domain_rules.md`。\n\
+              - 不输出 `<think>`、hidden JSON 或工具参数伪文本；工具调用结束后用可见自然语言汇报。\n"
+          maximum_iterations:
+            type: constant
+            value: 45
+        tool_node_version: '2'
+        agent_strategy_name: function_calling
+        agent_strategy_label: FunctionCalling
+        plugin_unique_identifier: langgenius/agent:0.0.34@4b41a374567eb7cb226ee2f851513794566956008f1166c63205efc921be72d8
+        agent_strategy_provider_name: langgenius/agent/agent
+      type: custom
+      width: 241
+      height: 187
+      position:
+        x: 704
+        y: 268
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 704
+        y: 268
+    viewport:
+      x: -138.9000000000001
+      y: 185.10000000000002
+      zoom: 0.7
+x-loregit-export:
+  source: local_dify_postgres_live_workflow
+  app_id: b58303e8-4a67-4327-8f56-ff1dbfc4023e
+  workflow_id: a4462c69-d0db-46f6-8f3c-50c5c6d04bbb
+  workflow_version: '2026-05-03 01:56:29.423927'
+  note: API keys, provider credentials, and knowledge-base data are intentionally not included.

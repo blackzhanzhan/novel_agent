@@ -1,0 +1,73 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+novel_git_server/.venv/
+.venv/
+venv/
+novel_git_server/.venv_linux/
+novel_git_server/.tmp_tests/
+
+.DS_Store
+Thumbs.db
+novel_git_server/storage/
+
+# Track sanitized Dify DSL snapshots for reproducible demo imports.
+# Keep private backups, credentials, and generated secrets out of this folder.
+dify_workflows/*
+!dify_workflows/
+!dify_workflows/*.yml
+!dify_workflows/README.md
+novel_git_server/=0.53.0
+novels/
+test.txt
+novel_git_server/tests/test_harness.py
+
+# Frontend build artifacts
+frontend/dist/
+frontend/*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+frontend/vite.log
+
+# Frontend dependency/cache artifacts
+frontend/node_modules/
+frontend/.vite/
+
+# Local runtime symlink
+novel_git_server/venv
+novel_git_server/.env.local
+
+# Local analysis export
+输出.pdf
+
+# Local runtime files
+.runtime/
+.codex
+.claude/
+dev_repo/*
+!dev_repo/architecture/
+!dev_repo/architecture/**
+reference_upstreams/
+
+# Dify PostgreSQL backups
+.dify_backups/
+
+# Local deployment env files
+deploy/demo/.env
+deploy/demo/*.local
+deploy/demo/*.local.*
+
+# Compose demo build cache / generated demo artifacts
+.docker-build/
+
+# Debug / experiment scripts
+_debug_*.ps1
+scripts/tomato_experiments/
+
+# Tomato downloader artifacts leaked into novel_git_server
+novel_git_server/[0-9]*_*/
+novel_git_server/*.txt
+!novel_git_server/requirements.txt

@@ -1,0 +1,535 @@
+app:
+  description: 审查续写草稿并沉淀 error_archive.md 的自进化约束
+  icon: ??
+  icon_background: '#E0F2FE'
+  mode: advanced-chat
+  name: 审核agent
+  use_icon_as_answer_icon: false
+dependencies: []
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      enabled: false
+      number_limits: 3
+      fileUploadConfig:
+        file_size_limit: 15
+        batch_count_limit: 5
+        file_upload_limit: 20
+        audio_file_size_limit: 50
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        image_file_batch_limit: 10
+        workflow_file_upload_limit: 10
+        single_chunk_attachment_limit: 10
+        attachment_image_file_size_limit: 2
+      allowed_file_types:
+      - image
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+    speech_to_text:
+      enabled: false
+    text_to_speech:
+      voice: ''
+      enabled: false
+      language: ''
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    suggested_questions: []
+    sensitive_word_avoidance:
+      enabled: false
+    suggested_questions_after_answer:
+      enabled: false
+  graph:
+    edges:
+    - id: 1777261774474-llm
+      data:
+        sourceType: start
+        targetType: agent
+      type: custom
+      source: '1777261774474'
+      target: llm
+      sourceHandle: source
+      targetHandle: target
+    - id: llm-answer
+      data:
+        sourceType: agent
+        targetType: answer
+      type: custom
+      source: llm
+      target: answer
+      sourceHandle: source
+      targetHandle: target
+    nodes:
+    - id: '1777261774474'
+      data:
+        type: start
+        title: 用户输入
+        selected: false
+        variables:
+        - hint: 当前书籍名称；如果前端已传入 book_id，可以保持为空。
+          type: text-input
+          label: book_name
+          default: ''
+          options: []
+          required: true
+          variable: book_name
+          placeholder: 例如：我的作品
+        - hint: 本轮需要审核的草稿文件名，通常为 chapter_draft.md。
+          type: text-input
+          label: active_file
+          default: chapter_draft.md
+          options: []
+          required: true
+          variable: active_file
+          placeholder: chapter_draft.md
+      type: custom
+      width: 242
+      height: 134
+      position:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 80
+        y: 282
+    - id: llm
+      data:
+        meta:
+          version: 0.0.2
+          minimum_dify_version: 1.7.0
+        type: agent
+        title: REVIEW_AGENT
+        memory:
+          window:
+            size: 10
+            enabled: true
+          query_prompt_template: '用户请求：{{#sys.query#}}
+
+
+            当前书名：{{#1777261774474.book_name#}}
+
+            待审核草稿文件：{{#1777261774474.active_file#}}
+
+
+            请作为独立审核 Agent 审查当前草稿。先读取草稿和必要上下文，再输出审核意见；如发现可复用问题，写入 error_archive.md，作为后续续写 Agent 的硬约束或近期注意。
+
+            '
+        selected: true
+        output_schema: {}
+        agent_parameters:
+          model:
+            type: constant
+            value:
+              mode: chat
+              type: model-selector
+              model: deepseek-v4-flash
+              provider: langgenius/deepseek/deepseek
+              model_type: llm
+              completion_params:
+                thinking: true
+                reasoning_effort: high
+          query:
+            type: constant
+            value: '用户请求：{{#sys.query#}}
+
+
+              当前书名：{{#1777261774474.book_name#}}
+
+              待审核草稿文件：{{#1777261774474.active_file#}}
+
+
+              请作为独立审核 Agent 审查当前草稿。先读取草稿和必要上下文，再输出审核意见；如发现可复用问题，写入 error_archive.md，作为后续续写 Agent 的硬约束或近期注意。
+
+              '
+          tools:
+            type: constant
+            value:
+            - type: api
+              extra:
+                description: 读取指定 Markdown 文件的标题结构、section_path 与 base_etag，用于安全定位审核目标和写入前校验。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_outline
+              parameters:
+                book_id:
+                  auto: 1
+                  value: null
+                book_name:
+                  auto: 1
+                  value: null
+                file_name:
+                  auto: 1
+                  value: null
+              tool_label: get_markdown_outline
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取指定 Markdown 文件的标题结构、section_path 与 base_etag，用于安全定位审核目标和写入前校验。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 读取指定 Markdown 文件的局部章节内容，用于核对草稿、章卡、世界观、状态和错误档案证据。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_section
+              parameters:
+                book_id:
+                  auto: 1
+                  value: null
+                book_name:
+                  auto: 1
+                  value: null
+                file_name:
+                  auto: 1
+                  value: null
+                section_path:
+                  auto: 1
+                  value: null
+              tool_label: get_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取指定 Markdown 文件的局部章节内容，用于核对草稿、章卡、世界观、状态和错误档案证据。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 按范围读取书库归档内容，用于抽样核对原文、摘要、世界观、状态和大纲证据。
+              enabled: true
+              settings: {}
+              tool_name: get_archive_range
+              parameters:
+                book_id:
+                  auto: 1
+                  value: null
+                end_line:
+                  auto: 1
+                  value: null
+                book_name:
+                  auto: 1
+                  value: null
+                file_name:
+                  auto: 1
+                  value: null
+                start_line:
+                  auto: 1
+                  value: null
+              tool_label: get_archive_range
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 按范围读取书库归档内容，用于抽样核对原文、摘要、世界观、状态和大纲证据。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 读取书库核心档案，用于快速取得当前作品的关键上下文；大文件只在必要时兜底使用。
+              enabled: true
+              settings: {}
+              tool_name: get_core_archive
+              parameters:
+                book_id:
+                  auto: 1
+                  value: null
+                book_name:
+                  auto: 1
+                  value: null
+                file_name:
+                  auto: 1
+                  value: null
+              tool_label: get_core_archive
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取书库核心档案，用于快速取得当前作品的关键上下文；大文件只在必要时兜底使用。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 只读抽取章节高价值片段，用于给审核判断提供原文证据，不写入任何文件。
+              enabled: true
+              settings: {}
+              tool_name: extract_chapter_highlights
+              parameters:
+                book_id:
+                  auto: 1
+                  value: null
+                keywords:
+                  auto: 1
+                  value: null
+                book_name:
+                  auto: 1
+                  value: null
+                chapter_index:
+                  auto: 1
+                  value: null
+                context_lines:
+                  auto: 1
+                  value: null
+                context_sentences:
+                  auto: 1
+                  value: null
+              tool_label: extract_chapter_highlights
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 只读抽取章节高价值片段，用于给审核判断提供原文证据，不写入任何文件。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 在 draft/sandbox 分支向指定 Markdown 文件追加完整子章节；审核智能体只允许用于 error_archive.md 的可复用问题记录。
+              enabled: true
+              settings: {}
+              tool_name: draft_append_markdown_section
+              parameters:
+                origin:
+                  auto: 1
+                  value: null
+                book_id:
+                  auto: 1
+                  value: null
+                content:
+                  auto: 1
+                  value: null
+                message:
+                  auto: 1
+                  value: null
+                base_etag:
+                  auto: 1
+                  value: null
+                book_name:
+                  auto: 1
+                  value: null
+                file_name:
+                  auto: 1
+                  value: null
+                section_path:
+                  auto: 1
+                  value: null
+              tool_label: draft_append_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 在 draft/sandbox 分支向指定 Markdown 文件追加完整子章节；审核智能体只允许用于 error_archive.md 的可复用问题记录。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 在 draft/sandbox 分支替换指定 Markdown section；content 必须包含目标标题行，base_etag 必须来自最近读取结果。
+              enabled: true
+              settings: {}
+              tool_name: draft_replace_markdown_section
+              parameters:
+                origin:
+                  auto: 1
+                  value: null
+                book_id:
+                  auto: 1
+                  value: null
+                content:
+                  auto: 1
+                  value: null
+                message:
+                  auto: 1
+                  value: null
+                base_etag:
+                  auto: 1
+                  value: null
+                book_name:
+                  auto: 1
+                  value: null
+                file_name:
+                  auto: 1
+                  value: null
+                section_path:
+                  auto: 1
+                  value: null
+              tool_label: draft_replace_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 在 draft/sandbox 分支替换指定 Markdown section；content 必须包含目标标题行，base_etag 必须来自最近读取结果。
+              provider_show_name: LoreGit 后端工具集
+          instruction:
+            type: constant
+            value: '# 角色：REVIEW_AGENT / 正文审查编辑
+
+
+              你是多层小说创作工作室中的独立审核 Agent。你不续写正文，不替作者归档正式稿；你只审查当前草稿是否可以进入作者审批，并把可复用的问题沉淀到 error_archive.md，让后续续写 Agent 自动规避同类错误。
+
+
+              ## 工作目标
+
+              1. 读取当前草稿文件，默认 chapter_draft.md。
+
+              2. 对照 chapter_outline.md、arc_outline.md、status_card.md、summary.md、world_model.md、style_guide.md 和 error_archive.md
+              审稿。
+
+              3. 输出给作者可读的审核意见。
+
+              4. 若发现明确问题，必须写入 error_archive.md，形成下一轮续写的硬约束或近期注意。
+
+              5. 不修改 chapter_draft.md，不归档 main，不直接重写正文。
+
+
+              ## 必读文件
+
+              - 当前草稿：来自工作流输入 active_file，默认 chapter_draft.md。
+
+              - chapter_outline.md：逐章任务与章节边界。
+
+              - arc_outline.md：篇章功能与情绪阶段。
+
+              - status_card.md：当前状态。
+
+              - summary.md：最近剧情承接。
+
+              - style_guide.md：文风、节奏、禁忌。
+
+              - world_model.md：世界观与专业设定。
+
+              - error_archive.md：历史错误与现有硬约束。
+
+
+              ## 审核维度
+
+              - 大纲遵循：是否完成每章任务，是否提前消费后续章节高潮。
+
+              - 连续性：是否接住最近章节、summary、status_card。
+
+              - 设定一致：世界观、人物状态、能力代价、时间线是否冲突。
+
+              - 专业事实：题材专业细节是否有硬伤，例如赛事、阵营、装备、术语、历史节点。
+
+              - 文风一致：是否符合 style_guide 的叙事距离、句式节奏、情感阈值。
+
+              - 结构质量：是否模板化、重复化、摘要化，是否像正式正文。
+
+              - 可归档性：给出“可归档 / 作者小修 / 打回重写”三选一建议。
+
+
+              ## 错误档案写入规则
+
+              只有发现可复用的问题时才写 error_archive.md；纯通过时不要制造空错误。
+
+              不要只记录第一个问题。若草稿中存在多个高置信问题，必须合并写入 2-5 条最有复用价值的约束，优先记录硬伤、章节越界、反复模板化和会污染后续续写的问题。
+
+              不要虚构日期。若无法可靠获得真实日期，日期位置写“未标定日期”；如果用户或系统输入提供了明确日期，才使用该日期。
+
+              写入前必须：
+
+              1. get_markdown_outline(book_name=当前书名, file_name=error_archive.md)
+
+              2. 使用返回的 etag 作为 base_etag。
+
+              3. section_path 使用 outline 返回的根标题：错误档案。
+
+              4. 使用 draft_append_markdown_section 追加一个新的审查条目。
+
+              5. origin 必须为 explicit_user_write。
+
+
+              错误档案条目格式必须是 Markdown，建议如下：
+
+
+              ### YYYY-MM-DD / 审核 / <草稿文件或章节范围>
+
+              - 来源：REVIEW_AGENT
+
+              - 结论：作者小修 / 打回重写 / 可归档但需注意
+
+              - 类型：电竞事实错误 / 大纲越界 / 设定冲突 / 文风漂移 / 结构模板化 / 连续性断裂 / 其他
+
+              - 问题：用一句话说明具体错误。
+
+              - 证据：引用或概括草稿中的位置，不要大段复制正文。
+
+              - 约束：写成后续续写 Agent 可以直接遵守的命令式规则。
+
+              - 有效期：硬性禁令 / 近期注意 / 已修复观察候选
+
+
+              ## 输出给作者
+
+              用自然中文输出：
+
+              - 审核结论
+
+              - 主要问题，按严重度排序
+
+              - 建议动作：亲自修改 / 归档 / 打回续写 Agent 重写
+
+              - 已写入错误档案的约束摘要
+
+
+              ## 结论纪律
+
+              - 只要存在专业事实硬伤、大纲高潮提前消费、章节任务错位、或三章结构明显模板化，就优先建议“打回续写 Agent 重写”。
+
+              - 只有问题局限于少量措辞、句式或局部补丁，才建议“作者小修”。
+
+              - 只有没有高置信问题，且正文质量、连续性、大纲遵循都达标，才建议“归档”。
+
+
+              不要输出隐藏 JSON，不要输出工具参数，不要把完整草稿复制给用户。
+
+
+              ## 当前输入
+
+              - 当前书名：{{#1777261774474.book_name#}}
+
+              - 待审核草稿：{{#1777261774474.active_file#}}
+
+              '
+          maximum_iterations:
+            type: constant
+            value: 10
+        tool_node_version: '2'
+        agent_strategy_name: function_calling
+        agent_strategy_label: FunctionCalling
+        plugin_unique_identifier: langgenius/agent:0.0.34@4b41a374567eb7cb226ee2f851513794566956008f1166c63205efc921be72d8
+        agent_strategy_provider_name: langgenius/agent/agent
+      type: custom
+      width: 241
+      height: 187
+      position:
+        x: 380
+        y: 282
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 380
+        y: 282
+    - id: answer
+      data:
+        type: answer
+        title: 直接回复
+        answer: '{{#llm.text#}}'
+        selected: false
+        variables: []
+      type: custom
+      width: 241
+      height: 102
+      position:
+        x: 680
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 680
+        y: 282
+    viewport:
+      x: 258.25945717052525
+      y: 121.56792824406779
+      zoom: 0.757858283255199
+x-loregit-export:
+  source: local_dify_postgres_live_workflow
+  app_id: b3574a2f-d599-4641-bf77-4f5adf9fd089
+  workflow_id: 4937544b-b9d2-4787-ae22-69509246f779
+  workflow_version: '2026-05-03 01:56:14.041783'
+  note: API keys, provider credentials, and knowledge-base data are intentionally not included.

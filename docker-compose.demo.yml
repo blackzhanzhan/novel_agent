@@ -1,0 +1,97 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: deploy/demo/backend.Dockerfile
+      args:
+        BACKEND_BASE_IMAGE: ${BACKEND_BASE_IMAGE:-mcr.microsoft.com/devcontainers/python:3.11-bookworm}
+    image: novel-agent-demo-backend:local
+    environment:
+      HOST: 0.0.0.0
+      PORT: ${BACKEND_PORT:-8000}
+      CHRONOS_DEV_REPO_ROOT: /app/novel_agent/dev_repo
+      STORAGE_ROOT: /app/novel_agent/novel_git_server/storage
+      DIFY_BASE_URL: ${COMPOSE_DIFY_BASE_URL:-http://host.docker.internal/v1}
+      DIFY_API_KEY: ${DIFY_API_KEY:-}
+      DIFY_READING_ARCHIVE_API_KEY: ${DIFY_READING_ARCHIVE_API_KEY:-}
+      DIFY_WORLD_MODEL_API_KEY: ${DIFY_WORLD_MODEL_API_KEY:-}
+      DIFY_STYLE_GUIDE_API_KEY: ${DIFY_STYLE_GUIDE_API_KEY:-}
+      DIFY_OUTLINE_API_KEY: ${DIFY_OUTLINE_API_KEY:-}
+      DIFY_CONTINUATION_API_KEY: ${DIFY_CONTINUATION_API_KEY:-}
+      DIFY_REVIEW_API_KEY: ${DIFY_REVIEW_API_KEY:-}
+      DIFY_TIMEOUT_SECONDS: ${DIFY_TIMEOUT_SECONDS:-90}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
+      TOMATO_LIBRARY_ROOT: /app/novel_agent/novel_git_server/storage
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - demo-storage:/app/novel_agent/novel_git_server/storage
+      - demo-runtime:/app/novel_agent/.runtime
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import json,urllib.request; data=json.load(urllib.request.urlopen('http://127.0.0.1:8000/health')); raise SystemExit(0 if data.get('status')=='ok' else 1)",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: deploy/demo/frontend.Dockerfile
+      args:
+        FRONTEND_BASE_IMAGE: ${FRONTEND_BASE_IMAGE:-mcr.microsoft.com/devcontainers/javascript-node:22-bookworm}
+    image: novel-agent-demo-frontend:local
+    environment:
+      VITE_FLASK_ORIGIN: ${VITE_FLASK_ORIGIN:-http://backend:8000}
+      VITE_API_TIMEOUT_MS: ${VITE_API_TIMEOUT_MS:-20000}
+      VITE_DEDUCTION_TIMEOUT_MS: ${VITE_DEDUCTION_TIMEOUT_MS:-90000}
+      VITE_TOMATO_IMPORT_TIMEOUT_MS: ${VITE_TOMATO_IMPORT_TIMEOUT_MS:-600000}
+      VITE_ALLOWED_HOSTS: ${VITE_ALLOWED_HOSTS:-frontend}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:5173/').then(r => { if (!r.ok) process.exit(1); return r.text(); }).then(text => { if (!text.includes('LoreGit')) process.exit(1); }).catch(() => process.exit(1));",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  smoke:
+    image: ${BACKEND_BASE_IMAGE:-mcr.microsoft.com/devcontainers/python:3.11-bookworm}
+    profiles: ["smoke"]
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    environment:
+      BACKEND_URL: http://backend:8000
+      FRONTEND_URL: http://frontend:5173
+      DIFY_SMOKE_URL: ${DIFY_SMOKE_URL:-}
+      DIFY_SMOKE_REQUIRED: ${DIFY_SMOKE_REQUIRED:-0}
+    volumes:
+      - ./deploy/demo/compose_smoke.py:/smoke/compose_smoke.py:ro
+    command: ["python", "/smoke/compose_smoke.py"]
+
+volumes:
+  demo-storage:
+  demo-runtime:

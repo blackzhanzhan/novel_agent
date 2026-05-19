@@ -1,0 +1,2048 @@
+{
+  "prd_version": "v3.1",
+  "architecture": "Lazy Backend & Structured Memory",
+  "last_updated": "2026-02-22T15:41:12Z",
+  "protocol": "application/json",
+  "hard_rules": {
+    "legacy_wrappers": "forbidden",
+    "book_id_required": false,
+    "book_id_or_book_name_required": true,
+    "checkout_mode": "include_params_only",
+    "database_json": "retired"
+  },
+  "phase_v3_refactor": {
+    "status": "done",
+    "goal": "Multi-book nested-git storage with strict lazy backend and no legacy compatibility debt.",
+    "tasks": [
+      {
+        "id": "v3.1_storage_book_layout",
+        "status": "done",
+        "description": "Create storage layout helper for storage/{book_id}/ with world_model.md, summary.md, chapters/, outlines/.",
+        "target_file": "novel_git_server/book_storage.py",
+        "tested_at": "2026-02-15T13:16:27",
+        "acceptance": [
+          "ensure_book_layout(book_id) creates required directories and files",
+          "all generated paths stay under storage root"
+        ]
+      },
+      {
+        "id": "v3.2_book_id_strict_validation",
+        "status": "done",
+        "description": "Enforce strict book_id validation for all v3 APIs.",
+        "target_file": "novel_git_server/book_storage.py",
+        "tested_at": "2026-02-15T13:04:00",
+        "acceptance": [
+          "missing or invalid book_id returns 400",
+          "path traversal patterns are rejected"
+        ]
+      },
+      {
+        "id": "v3.3_request_book_id_guard",
+        "status": "done",
+        "description": "Add centralized request guard to require book_id in each v3 endpoint.",
+        "target_file": "novel_git_server/git_server.py",
+        "tested_at": "2026-02-15T13:12:00",
+        "acceptance": [
+          "all v3 routes call shared guard",
+          "error body uses status/code/message shape"
+        ]
+      },
+      {
+        "id": "v3.4_hard_cut_legacy_routes",
+        "status": "done",
+        "description": "Remove legacy route registrations. No wrapper compatibility layer.",
+        "target_file": "novel_git_server/git_server.py",
+        "tested_at": "2026-02-15T14:11:00",
+        "acceptance": [
+          "legacy routes are not registered",
+          "only v3 route set is active"
+        ]
+      },
+      {
+        "id": "v3.5_add_chapter_endpoint",
+        "status": "done",
+        "description": "Implement POST /books/add_chapter to archive chapter files.",
+        "target_file": "novel_git_server/chapter_agent.py",
+        "tested_at": "2026-02-15T13:20:00",
+        "acceptance": [
+          "chapter content is persisted in chapters/",
+          "response includes file path and chapter index"
+        ]
+      },
+      {
+        "id": "v3.6_chapter_filename_policy",
+        "status": "done",
+        "description": "Apply filename convention {4-digit}_{title}.md with sanitization.",
+        "target_file": "novel_git_server/chapter_agent.py",
+        "tested_at": "2026-02-15T13:26:00",
+        "acceptance": [
+          "natural sort order is stable",
+          "illegal filename characters are handled"
+        ]
+      },
+      {
+        "id": "v3.7_commit_world_state_endpoint",
+        "status": "done",
+        "description": "Implement POST /commit_world_state with real git add/commit/rev-parse.",
+        "target_file": "novel_git_server/world_state_agent.py",
+        "tested_at": "2026-02-15T13:32:00",
+        "acceptance": [
+          "world_model.md updated",
+          "response commit_id is actual git hash",
+          "nothing to commit is treated as success"
+        ]
+      },
+      {
+        "id": "v3.8_commit_summary_endpoint",
+        "status": "done",
+        "description": "Implement POST /books/commit_summary with real git commit flow.",
+        "target_file": "novel_git_server/summary_agent.py",
+        "tested_at": "2026-02-15T13:36:00",
+        "acceptance": [
+          "summary.md updated",
+          "returns actual git hash"
+        ]
+      },
+      {
+        "id": "v3.9_outline_v3_endpoint",
+        "status": "done",
+        "description": "Refactor outline endpoints to explicit book scope and v3 payload style.",
+        "target_file": "novel_git_server/outline_agent.py",
+        "tested_at": "2026-02-15T13:43:00",
+        "acceptance": [
+          "outline save/list is isolated by book_id",
+          "no implicit default book"
+        ]
+      },
+      {
+        "id": "v3.10_tool_read_chapter",
+        "status": "done",
+        "description": "Implement POST /tools/read_chapter for full chapter retrieval.",
+        "target_file": "novel_git_server/tools_agent.py",
+        "tested_at": "2026-02-15T13:49:00",
+        "acceptance": [
+          "reads chapter by index",
+          "returns full markdown text"
+        ]
+      },
+      {
+        "id": "v3.11_tool_search_chapter_index",
+        "status": "done",
+        "description": "Implement POST /tools/search_chapter_index keyword counting tool.",
+        "target_file": "novel_git_server/tools_agent.py",
+        "tested_at": "2026-02-15T13:53:00",
+        "acceptance": [
+          "returns per-chapter hit counts",
+          "works with unicode text"
+        ]
+      },
+      {
+        "id": "v3.12_checkout_include_composer",
+        "status": "done",
+        "description": "Implement GET /checkout using include and last_n composition without role hardcoding.",
+        "target_file": "novel_git_server/checkout_agent.py",
+        "tested_at": "2026-02-15T14:00:00",
+        "acceptance": [
+          "supports include=world_model,summary,chapters",
+          "supports last_n for chapter window",
+          "include parser trims whitespace around comma-separated tokens",
+          "unknown include token returns clear error"
+        ]
+      },
+      {
+        "id": "v3.13_git_history_only",
+        "status": "done",
+        "description": "Implement /books/history directly from git log for each book repository.",
+        "target_file": "novel_git_server/history_agent.py",
+        "tested_at": "2026-02-15T14:06:00",
+        "acceptance": [
+          "history comes from git log only",
+          "no database.json dependency"
+        ]
+      },
+      {
+        "id": "v3.14_remove_database_json_dependency",
+        "status": "done",
+        "description": "Remove runtime reads/writes of database.json in server paths.",
+        "target_file": "novel_git_server/git_server.py",
+        "tested_at": "2026-02-15T14:16:00",
+        "acceptance": [
+          "core APIs run without database.json",
+          "single source of truth is filesystem + git"
+        ]
+      },
+      {
+        "id": "v3.15_one_time_migration",
+        "status": "done",
+        "description": "Provide one-time migration from v2.4 layout into storage/{book_id} layout.",
+        "target_file": "novel_git_server/tools/migrate_v24_to_v30.py",
+        "tested_at": "2026-02-15T14:19:00",
+        "acceptance": [
+          "existing data moved safely",
+          "database.json archived or removed"
+        ]
+      },
+      {
+        "id": "v3.16_test_book_id_required",
+        "status": "done",
+        "description": "Add tests for strict book_id requirement across v3 endpoints.",
+        "target_file": "novel_git_server/tests/test_v3_validation.py",
+        "tested_at": "2026-02-15T14:24:00",
+        "acceptance": [
+          "missing book_id => 400",
+          "invalid book_id => 400"
+        ]
+      },
+      {
+        "id": "v3.17_test_checkout_include",
+        "status": "done",
+        "description": "Add tests for include/last_n checkout composition behavior.",
+        "target_file": "novel_git_server/tests/test_v3_checkout.py",
+        "tested_at": "2026-02-15T14:30:00",
+        "acceptance": [
+          "comma+space include values parse correctly",
+          "last_n window is respected"
+        ]
+      },
+      {
+        "id": "v3.18_test_storage_and_git",
+        "status": "done",
+        "description": "Add tests for per-book repo init and real git commit hash behavior.",
+        "target_file": "novel_git_server/tests/test_v3_storage_git.py",
+        "tested_at": "2026-02-15T13:16:27",
+        "acceptance": [
+          "book repo auto-init works",
+          "commit hash is from rev-parse",
+          "nothing to commit path is stable"
+        ]
+      },
+      {
+        "id": "v3.19_test_migration_no_dbjson",
+        "status": "done",
+        "description": "Add migration tests ensuring no runtime database.json dependency remains.",
+        "target_file": "novel_git_server/tests/test_v3_migration.py",
+        "tested_at": "2026-02-15T14:38:00",
+        "acceptance": [
+          "migration succeeds from existing sample",
+          "post-migration runtime does not require database.json"
+        ]
+      },
+      {
+        "id": "v3.20_docs_progress_update",
+        "status": "done",
+        "description": "Update progress log with v3 refactor evidence and verification records.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "tested_at": "2026-02-15T14:42:00",
+        "acceptance": [
+          "each task has timestamped progress note",
+          "test evidence is linked"
+        ]
+      },
+      {
+        "id": "v3.21_checklist_writeback",
+        "status": "done",
+        "description": "Keep checklist status synchronized during implementation loop.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "tested_at": "2026-02-15T14:44:00",
+        "acceptance": [
+          "task status transitions are explicit",
+          "checklist remains valid JSON"
+        ]
+      }
+    ]
+  },
+  "phase_v31_world_refactor": {
+    "status": "done",
+    "goal": "Unify deterministic addressing, generic markdown/json archive APIs, and full self-healing templates for world-agent data chain.",
+    "tasks": [
+      {
+        "id": "r1_contract_freeze",
+        "status": "done",
+        "description": "Sync PRD/API contracts for deterministic addressing and generic archive API defaults.",
+        "target_file": "prd.md, novel_git_server/docs/api.md",
+        "tested_at": "2026-02-15T18:42:00",
+        "acceptance": [
+          "origin default is [System_Update]",
+          "get_file scope includes chapters/*.md and all .md/.json setting files"
+        ]
+      },
+      {
+        "id": "r2_add_resolver_helper",
+        "status": "done",
+        "description": "Add shared resolve_book_id helper (book_id > book_name deterministic generation).",
+        "target_file": "novel_git_server/utils/book_storage.py",
+        "tested_at": "2026-02-15T18:48:00",
+        "acceptance": [
+          "missing book_id + valid book_name resolves deterministically",
+          "invalid inputs return consistent ValueError"
+        ]
+      },
+      {
+        "id": "r3_wire_resolver_world_state",
+        "status": "done",
+        "description": "Update world_state route to support book_name-only addressing.",
+        "target_file": "novel_git_server/agents/world_state.py",
+        "tested_at": "2026-02-15T18:52:00",
+        "acceptance": [
+          "/commit_world_state works with book_name only",
+          "existing book_id flow remains compatible"
+        ]
+      },
+      {
+        "id": "r4_wire_resolver_summary",
+        "status": "done",
+        "description": "Update commit_summary route to support book_name-only addressing.",
+        "target_file": "novel_git_server/agents/summary.py",
+        "tested_at": "2026-02-15T18:56:00",
+        "acceptance": [
+          "/books/commit_summary works with book_name only",
+          "existing book_id flow remains compatible"
+        ]
+      },
+      {
+        "id": "r5_wire_resolver_other_routes",
+        "status": "done",
+        "description": "Apply unified addressing to chapter/tools/checkout/history routes.",
+        "target_file": "novel_git_server/agents/chapter.py, novel_git_server/agents/tools.py, novel_git_server/agents/checkout.py, novel_git_server/agents/history.py, novel_git_server/app.py",
+        "tested_at": "2026-02-15T19:03:00",
+        "acceptance": [
+          "book_name query/payload can locate repository on all book routes",
+          "book_id path remains valid"
+        ]
+      },
+      {
+        "id": "r6_self_heal_templates_extend",
+        "status": "done",
+        "description": "Extend ensure_book_layout to create status_card.md and error_archive.md with structured templates.",
+        "target_file": "novel_git_server/utils/book_storage.py",
+        "tested_at": "2026-02-15T19:09:00",
+        "acceptance": [
+          "new books include status_card.md and error_archive.md",
+          "deleted book directories are recreated with all templates"
+        ]
+      },
+      {
+        "id": "r7_generic_archive_agent_add",
+        "status": "done",
+        "description": "Add generic archive blueprint for /books/get_file and /books/update_file.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "tested_at": "2026-02-15T19:14:00",
+        "acceptance": [
+          "get_file reads target text file by logical name",
+          "update_file writes raw text content without semantic parsing"
+        ]
+      },
+      {
+        "id": "r8_archive_safety_guard",
+        "status": "done",
+        "description": "Add path traversal and extension guards for generic file access.",
+        "target_file": "novel_git_server/agents/archive.py, novel_git_server/utils/book_storage.py",
+        "tested_at": "2026-02-15T19:19:00",
+        "acceptance": [
+          "paths escaping book directory are rejected",
+          "only .md/.json targets are accepted"
+        ]
+      },
+      {
+        "id": "r9_atomic_commit_tagging",
+        "status": "done",
+        "description": "Implement atomic write+git commit for update_file with origin message tags.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "tested_at": "2026-02-15T19:24:00",
+        "acceptance": [
+          "origin=ai => [AI_Update], origin=user => [User_Edit], default => [System_Update]",
+          "commit failure rolls back file write to avoid half state"
+        ]
+      },
+      {
+        "id": "r10_register_archive_blueprint",
+        "status": "done",
+        "description": "Register archive blueprint in app factory.",
+        "target_file": "novel_git_server/app.py",
+        "tested_at": "2026-02-15T19:27:00",
+        "acceptance": [
+          "new routes appear in url map",
+          "legacy route guard remains intact"
+        ]
+      },
+      {
+        "id": "r11_tests_resolver_and_self_heal",
+        "status": "done",
+        "description": "Add tests for deterministic addressing fallback and self-healing template creation.",
+        "target_file": "novel_git_server/tests/test_v31_addressing.py",
+        "tested_at": "2026-02-15T19:33:00",
+        "acceptance": [
+          "book_name-only calls pass",
+          "deleted repo recovers with status_card.md + error_archive.md"
+        ]
+      },
+      {
+        "id": "r12_tests_archive_api",
+        "status": "done",
+        "description": "Add tests for get_file/update_file, path safety, and commit tag behavior.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "tested_at": "2026-02-15T19:40:00",
+        "acceptance": [
+          "update_file commit subject has correct prefix",
+          "path traversal payload returns error"
+        ]
+      },
+      {
+        "id": "r13_docs_sync",
+        "status": "done",
+        "description": "Sync API and PRD documents with implemented archive workflow details.",
+        "target_file": "novel_git_server/docs/api.md, prd.md",
+        "tested_at": "2026-02-15T19:46:00",
+        "acceptance": [
+          "docs match runtime endpoints and payloads",
+          "status_card markdown philosophy is explicit"
+        ]
+      },
+      {
+        "id": "r14_final_regression",
+        "status": "done",
+        "description": "Run regression suite and produce completion log for R1-R13.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "tested_at": "2026-02-15T19:52:00",
+        "acceptance": [
+          "targeted v31 tests pass",
+          "checklist statuses are fully synchronized"
+        ]
+      },
+      {
+        "id": "r15_style_guide_template_init",
+        "status": "done",
+        "description": "Initialize style_guide.md in ensure_book_layout with structured guidance sections.",
+        "target_file": "novel_git_server/utils/book_storage.py",
+        "tested_at": "2026-02-15T20:35:00",
+        "acceptance": [
+          "new and self-healed books include style_guide.md",
+          "style_guide template contains vocabulary/syntax/emotion sections"
+        ]
+      },
+      {
+        "id": "r16_error_archive_negative_constraints",
+        "status": "done",
+        "description": "Strengthen error_archive.md template with concrete negative constraints examples.",
+        "target_file": "novel_git_server/utils/book_storage.py",
+        "acceptance": [
+          "template embeds at least three explicit ???? examples",
+          "cold start can directly guide reviewer negative constraints"
+        ],
+        "tested_at": "2026-02-15T20:42:00"
+      },
+      {
+        "id": "r17_update_file_rollback_visibility",
+        "status": "done",
+        "description": "Expose rollback failures in update_file: traceback logging + warning field in API response.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "rollback failure is logged with traceback",
+          "error response carries warning field when rollback fails"
+        ],
+        "tested_at": "2026-02-15T20:49:00"
+      }
+    ]
+  },
+  "phase_v31_cleanup": {
+    "status": "done",
+    "goal": "Archive legacy artifacts, isolate broken legacy tests, remove light dead code, and clean runtime temp/cache without touching v3.1 runtime behavior.",
+    "tasks": [
+      {
+        "id": "c1_archive_legacy_artifacts",
+        "status": "done",
+        "description": "Create legacy_attic and move outdated tools/docs artifacts into attic.",
+        "target_file": "novel_git_server/legacy_attic/**",
+        "tested_at": "2026-02-15T21:15:00",
+        "acceptance": [
+          "legacy_attic/tools contains cleantxt.py and view_outlines.py",
+          "legacy_attic/docs contains dify_world_agent_v2_4.md and ????.md"
+        ]
+      },
+      {
+        "id": "c2_isolate_legacy_broken_tests",
+        "status": "done",
+        "description": "Move syntax-broken legacy tests into tests/legacy for isolation from active discover flow.",
+        "target_file": "novel_git_server/tests/legacy/**",
+        "acceptance": [
+          "test_phase1.py moved under tests/legacy",
+          "test_outline_unpack.py moved under tests/legacy"
+        ],
+        "tested_at": "2026-02-15T21:20:00"
+      },
+      {
+        "id": "c3_remove_unused_blueprint_args",
+        "status": "done",
+        "description": "Remove unused require_book_id parameter from library/summary/world_state blueprint factories and app wiring.",
+        "target_file": "novel_git_server/agents/library.py, novel_git_server/agents/summary.py, novel_git_server/agents/world_state.py, novel_git_server/app.py",
+        "acceptance": [
+          "no unused require_book_id parameter remains in these three blueprints",
+          "app.py registration stays valid and routes unchanged"
+        ],
+        "tested_at": "2026-02-15T21:24:00"
+      },
+      {
+        "id": "c4_runtime_cleanup_and_regression",
+        "status": "done",
+        "description": "Clean .tmp_tests and cache folders, then run regression to confirm runtime health.",
+        "target_file": "novel_git_server/.tmp_tests, __pycache__ directories",
+        "acceptance": [
+          "temp/cache folders cleaned",
+          "target regression suite passes"
+        ],
+        "tested_at": "2026-02-15T21:28:00"
+      }
+    ]
+  },
+  "phase_v31_archive_commit_isolation_hotfix": {
+    "status": "done",
+    "goal": "Restore archive update_file atomic write+rollback and prevent empty-commit 500 while keeping path-scoped git isolation.",
+    "tasks": [
+      {
+        "id": "a1_archive_atomic_write_restore",
+        "status": "done",
+        "description": "Restore atomic write path in /books/update_file using temp file + os.replace and rollback scaffolding.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "file write uses temporary file replacement to avoid half-written states",
+          "failure path can restore previous content or remove newly created file"
+        ],
+        "tested_at": "2026-02-18T12:36:17Z"
+      },
+      {
+        "id": "a2_archive_empty_commit_guard",
+        "status": "done",
+        "description": "Add git status --porcelain path-scoped empty-change guard before commit in update_file.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "no-change update returns success without attempting commit",
+          "commit exit 1 due to no changes does not surface as 500"
+        ],
+        "tested_at": "2026-02-18T12:37:00Z"
+      },
+      {
+        "id": "a3_archive_path_scoped_git_commit",
+        "status": "done",
+        "description": "Constrain git add/commit with pathspec in update_file to isolate target file only.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "git add uses -- <normalized_rel_path>",
+          "git commit uses -- <normalized_rel_path>"
+        ],
+        "tested_at": "2026-02-18T12:37:31Z"
+      },
+      {
+        "id": "a4_archive_regression_tests_sync",
+        "status": "done",
+        "description": "Update archive tests to cover no-change success and rollback warning behavior.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "new/updated tests assert no-change short-circuit behavior",
+          "rollback failure warning path remains covered"
+        ],
+        "tested_at": "2026-02-18T12:38:18Z"
+      },
+      {
+        "id": "a5_archive_hotfix_regression_run",
+        "status": "done",
+        "description": "Run targeted regression for archive + checkout after refactor.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py, novel_git_server/tests/test_v3_checkout.py",
+        "acceptance": [
+          "test_v31_archive passes",
+          "test_v3_checkout passes"
+        ],
+        "tested_at": "2026-02-18T12:38:39Z"
+      },
+      {
+        "id": "a6_archive_hotfix_progress_log_append",
+        "status": "done",
+        "description": "Append hotfix atomic log entry into progress_log.md with change/result/verification.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "acceptance": [
+          "log includes tasks a1-a5 with verification evidence",
+          "entry appended at file end"
+        ],
+        "tested_at": "2026-02-18T12:39:19Z"
+      },
+      {
+        "id": "a7_archive_hotfix_checklist_close",
+        "status": "done",
+        "description": "Finalize checklist statuses and timestamps for archive hotfix phase.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "all a1-a7 marked done with tested_at when applicable",
+          "phase status marked done"
+        ],
+        "tested_at": "2026-02-18T12:39:19Z"
+      }
+    ]
+  },
+  "phase_v32_archive_range_read_optimization": {
+    "status": "done",
+    "goal": "Provide path-safe line-range archive read API for token-efficient incremental agents.",
+    "tasks": [
+      {
+        "id": "a1_archive_range_contract_and_limits",
+        "status": "done",
+        "description": "Freeze get_archive_range contract with strict 1-based line window and max_lines hard limit.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "contract defines required fields: book_id|book_name, file_name, start_line, end_line",
+          "window is 1-based inclusive and rejects end_line < start_line",
+          "backend hard limit max_lines=500 is explicit in acceptance"
+        ],
+        "tested_at": "2026-02-19T04:29:12Z"
+      },
+      {
+        "id": "a2_archive_range_backend_helpers",
+        "status": "done",
+        "description": "Add reusable line-range parsing/validation helpers in archive blueprint.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "helpers validate positive integer lines",
+          "helpers enforce max_lines=500 and produce deterministic 400 errors"
+        ],
+        "tested_at": "2026-02-19T04:29:57Z"
+      },
+      {
+        "id": "a3_archive_range_route_injection",
+        "status": "done",
+        "description": "Inject GET /books/get_archive_range route reusing existing path safety guard.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "route resolves target via _resolve_target_file",
+          "route returns only requested line span and metadata fields",
+          "path traversal/.git/internal target remains blocked"
+        ],
+        "tested_at": "2026-02-19T04:30:51Z"
+      },
+      {
+        "id": "a4_archive_range_tests_sync",
+        "status": "done",
+        "description": "Extend archive tests for range-read success, safety, and max-lines guard.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "valid line-window read returns expected content",
+          "invalid ranges and >500 lines return 400",
+          "path traversal via get_archive_range returns INVALID_PAYLOAD"
+        ],
+        "tested_at": "2026-02-19T04:31:46Z"
+      },
+      {
+        "id": "a5_archive_range_contract_doc",
+        "status": "done",
+        "description": "Document new get_archive_range API contract and max_lines protection.",
+        "target_file": "novel_git_server/docs/archive_range_contract.md",
+        "acceptance": [
+          "doc includes request/response schema and error semantics",
+          "doc explicitly states max_lines=500 hard cap"
+        ],
+        "tested_at": "2026-02-19T04:32:25Z"
+      },
+      {
+        "id": "a6_archive_range_regression_run",
+        "status": "done",
+        "description": "Run target regression suite for archive range API and existing archive behavior.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "test_v31_archive passes after route addition",
+          "existing update_file/get_file behaviors remain green"
+        ],
+        "tested_at": "2026-02-19T04:33:21Z"
+      },
+      {
+        "id": "a7_archive_range_log_and_close",
+        "status": "done",
+        "description": "Append progress log and finalize phase checklist statuses.",
+        "target_file": "novel_git_server/docs/progress_log.md, novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "progress_log records a1-a6 actions and verification",
+          "phase and all tasks end in done state with tested_at"
+        ],
+        "tested_at": "2026-02-19T04:33:47Z"
+      }
+    ]
+  },
+  "phase_v33_archive_range_doc_semantic_hardening": {
+    "status": "done",
+    "goal": "Eliminate range API doc fragmentation and make limit errors agent-actionable.",
+    "tasks": [
+      {
+        "id": "a1_v33_contract_and_semantic_plan",
+        "status": "done",
+        "description": "Freeze v33 plan for single-source API docs and agent-friendly max-lines error message.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "api.md is declared as single source of truth for range API",
+          "max-lines error message contract includes requested line count and split-read guidance"
+        ],
+        "tested_at": "2026-02-19T04:39:22Z"
+      },
+      {
+        "id": "a2_v33_doc_merge_and_cleanup",
+        "status": "done",
+        "description": "Merge archive_range_contract.md content into docs/api.md and delete temporary contract file.",
+        "target_file": "novel_git_server/docs/api.md, novel_git_server/docs/archive_range_contract.md",
+        "acceptance": [
+          "range API contract is fully present in docs/api.md",
+          "archive_range_contract.md is removed"
+        ],
+        "tested_at": "2026-02-19T04:40:29Z"
+      },
+      {
+        "id": "a3_v33_agent_friendly_error_semantics",
+        "status": "done",
+        "description": "Update get_archive_range max-lines rejection message to include requested count and guidance.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "message format includes X and 500 line counts",
+          "message contains split-read instruction for agent auto-retry"
+        ],
+        "tested_at": "2026-02-19T04:41:07Z"
+      },
+      {
+        "id": "a4_v33_tests_and_regression",
+        "status": "done",
+        "description": "Sync tests for new error message semantics and run archive regression suite.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "max-lines test asserts the new actionable Chinese message",
+          "archive regression suite passes"
+        ],
+        "tested_at": "2026-02-19T04:41:59Z"
+      },
+      {
+        "id": "a5_v33_log_and_close",
+        "status": "done",
+        "description": "Append progress log entries and finalize checklist statuses for v33.",
+        "target_file": "novel_git_server/docs/progress_log.md, novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "progress_log contains a1-a4 execution evidence",
+          "phase_v33 and all tasks are marked done with tested_at"
+        ],
+        "tested_at": "2026-02-19T04:42:23Z"
+      }
+    ]
+  },
+  "phase_v34_chapter_highlights_fast_extract": {
+    "status": "done",
+    "goal": "Add ultra-light keyword highlight extraction API for low-latency chapter reads.",
+    "tasks": [
+      {
+        "id": "a1_v34_contract_freeze",
+        "status": "done",
+        "description": "Freeze /tools/extract_chapter_highlights contract and limits for fast-path extraction.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "request includes book_name/book_id, chapter_index, keywords, optional context_lines",
+          "pure Python string/regex matching only, no heavy NLP/vector dependency",
+          "MAX_TOTAL_CHARS default is 1000 with truncation metadata"
+        ],
+        "tested_at": "2026-02-19T08:09:44Z"
+      },
+      {
+        "id": "a2_v34_validation_helpers",
+        "status": "done",
+        "description": "Add payload normalization and validation helpers for keywords/context_lines constraints.",
+        "target_file": "novel_git_server/agents/tools.py",
+        "acceptance": [
+          "keywords list normalized, deduplicated, and bounded",
+          "context_lines validated with default and max guard"
+        ],
+        "tested_at": "2026-02-19T08:10:49Z"
+      },
+      {
+        "id": "a3_v34_highlight_match_engine",
+        "status": "done",
+        "description": "Implement line-scan keyword match engine and hit-window generation.",
+        "target_file": "novel_git_server/agents/tools.py",
+        "acceptance": [
+          "single-pass line scan records hit lines and keyword matches",
+          "window generation uses context_lines around hit line"
+        ],
+        "tested_at": "2026-02-19T08:11:59Z"
+      },
+      {
+        "id": "a4_v34_window_merge_and_budget",
+        "status": "done",
+        "description": "Implement overlapping/adjacent window merge and MAX_TOTAL_CHARS truncation budgeting.",
+        "target_file": "novel_git_server/agents/tools.py",
+        "acceptance": [
+          "adjacent windows merge without duplicate snippet output",
+          "response content is capped by MAX_TOTAL_CHARS=1000 with truncated flag"
+        ],
+        "tested_at": "2026-02-19T08:13:01Z"
+      },
+      {
+        "id": "a5_v34_route_injection",
+        "status": "done",
+        "description": "Inject POST /tools/extract_chapter_highlights route in tools blueprint.",
+        "target_file": "novel_git_server/agents/tools.py",
+        "acceptance": [
+          "route resolves chapter by book scope and chapter_index",
+          "response contains snippets, line metadata, and compression stats"
+        ],
+        "tested_at": "2026-02-19T08:13:55Z"
+      },
+      {
+        "id": "a6_v34_tests_sync",
+        "status": "done",
+        "description": "Add endpoint tests for hits, merging, empty hits, validation, and truncation behavior.",
+        "target_file": "novel_git_server/tests/test_v31_highlights.py",
+        "acceptance": [
+          "functional cases cover hit and no-hit flows",
+          "adjacent merge and max char truncation are asserted"
+        ],
+        "tested_at": "2026-02-19T08:15:27Z"
+      },
+      {
+        "id": "a7_v34_perf_benchmark",
+        "status": "done",
+        "description": "Run local benchmark and record p95 latency for highlight extraction endpoint.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "acceptance": [
+          "benchmark command and dataset shape are logged",
+          "p95 latency result is recorded in progress log"
+        ],
+        "tested_at": "2026-02-19T08:16:33Z"
+      },
+      {
+        "id": "a8_v34_docs_and_close",
+        "status": "done",
+        "description": "Sync API docs and finalize progress/checklist closure for v34.",
+        "target_file": "novel_git_server/docs/api.md, novel_git_server/docs/progress_log.md, novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "api.md documents new endpoint request/response contract",
+          "phase and all tasks are marked done with tested_at"
+        ],
+        "tested_at": "2026-02-19T08:17:46Z"
+      }
+    ]
+  },
+  "phase_v35_highlight_hybrid_radar_and_append_file": {
+    "status": "done",
+    "goal": "Fix single-line truncation blind spot with absolute-index hybrid radar and add append_file incremental write API.",
+    "tasks": [
+      {
+        "id": "a1_v35_contract_freeze",
+        "status": "done",
+        "description": "Freeze hybrid radar + append_file contracts and acceptance targets.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "extract endpoint switches to context_sentences semantics and absolute index extraction",
+          "single-line no-newline texts must preserve tail keyword context under 1000-char budget",
+          "append_file request contract includes book_name|book_id, file_name, append_content"
+        ],
+        "tested_at": "2026-02-19T12:20:30Z"
+      },
+      {
+        "id": "a2_v35_absolute_index_hit_engine",
+        "status": "done",
+        "description": "Replace line-based keyword scan with absolute-position hit extraction on raw text.",
+        "target_file": "novel_git_server/agents/tools.py",
+        "acceptance": [
+          "keyword match uses absolute character offsets only",
+          "no dependency on newline splitting for hit discovery"
+        ],
+        "tested_at": "2026-02-19T12:21:34Z"
+      },
+      {
+        "id": "a3_v35_sentence_boundary_expansion",
+        "status": "done",
+        "description": "Implement sentence-boundary expansion with boundary-scan fallback caps.",
+        "target_file": "novel_git_server/agents/tools.py",
+        "acceptance": [
+          "boundary set includes 。！？ and newline",
+          "200-char fallback window applies when punctuation is absent"
+        ],
+        "tested_at": "2026-02-19T12:23:03Z"
+      },
+      {
+        "id": "a4_v35_interval_merge_and_center_crop",
+        "status": "done",
+        "description": "Implement merged character ranges and center-crop truncation around keyword anchors.",
+        "target_file": "novel_git_server/agents/tools.py",
+        "acceptance": [
+          "overlapping and adjacent ranges are merged",
+          "budget clipping centers around hit anchor instead of article head"
+        ],
+        "tested_at": "2026-02-19T12:24:25Z"
+      },
+      {
+        "id": "a5_v35_extract_route_semantics_upgrade",
+        "status": "done",
+        "description": "Upgrade /tools/extract_chapter_highlights route to context_sentences and hybrid radar pipeline.",
+        "target_file": "novel_git_server/agents/tools.py",
+        "acceptance": [
+          "route accepts context_sentences and returns char-range snippets",
+          "single-line long chapter with tail hit returns relevant tail context"
+        ],
+        "tested_at": "2026-02-19T12:26:50Z"
+      },
+      {
+        "id": "a6_v35_highlight_tests_rewrite",
+        "status": "done",
+        "description": "Rewrite highlight tests for single-line edge cases, sentence expansion, and center-crop behavior.",
+        "target_file": "novel_git_server/tests/test_v31_highlights.py",
+        "acceptance": [
+          "tests cover no-newline long text with tail keyword extraction",
+          "tests assert merged intervals and context_sentences semantics"
+        ],
+        "tested_at": "2026-02-19T12:29:42Z"
+      },
+      {
+        "id": "a7_v35_append_file_route",
+        "status": "done",
+        "description": "Add POST /books/append_file with atomic write and path-scoped git commit behavior.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "append flow writes old+append_content atomically with rollback safety",
+          "git add/commit remains path-scoped to target file"
+        ],
+        "tested_at": "2026-02-19T12:31:32Z"
+      },
+      {
+        "id": "a8_v35_append_file_tests",
+        "status": "done",
+        "description": "Add append_file tests for success, empty append, and path safety.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "append content persists correctly and returns commit metadata",
+          "invalid path append requests are rejected with INVALID_PAYLOAD"
+        ],
+        "tested_at": "2026-02-19T12:34:05Z"
+      },
+      {
+        "id": "a9_v35_perf_benchmark_tail_hit",
+        "status": "done",
+        "description": "Benchmark single-line long text with tail keyword and record p95 latency.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "acceptance": [
+          "benchmark explicitly targets no-newline long chapter and keyword near text tail",
+          "p95 latency is logged with command and iteration details"
+        ],
+        "tested_at": "2026-02-19T12:35:40Z"
+      },
+      {
+        "id": "a10_v35_docs_and_close",
+        "status": "done",
+        "description": "Sync API docs and finalize v35 checklist/progress closure.",
+        "target_file": "novel_git_server/docs/api.md, novel_git_server/docs/progress_log.md, novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "api.md documents context_sentences semantics and append_file contract",
+          "v35 phase and tasks are all marked done with tested_at"
+        ],
+        "tested_at": "2026-02-19T12:36:54Z"
+      }
+    ]
+  },
+  "phase_v36_archive_write_conflict_guard": {
+    "status": "done",
+    "goal": "Add optimistic locking + short critical section file locks + conflict draft fallback to prevent human/agent dirty writes.",
+    "tasks": [
+      {
+        "id": "a1_v36_contract_freeze",
+        "status": "done",
+        "description": "Freeze write-conflict contract with core-file strict etag and chapter compatibility mode.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "core archive files require base_etag",
+          "non-core files keep optional base_etag compatibility"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a2_v36_etag_helpers",
+        "status": "done",
+        "description": "Add etag hash helpers, base_etag parser, core-file matcher, and conflict response utilities.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "etag helper returns deterministic sha256 for file/text",
+          "WRITE_CONFLICT response includes base_etag/current_etag/draft_file"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a3_v36_read_etag_surface",
+        "status": "done",
+        "description": "Expose etag in get_file/get_archive_range response body and ETag header.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "GET /books/get_file includes etag",
+          "GET /books/get_archive_range includes etag computed from full file"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a4_v36_short_critical_lock",
+        "status": "done",
+        "description": "Introduce per-file short critical section lock using fcntl.flock.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "check->write->git commit pipeline runs under exclusive path lock",
+          "lock files live under repo .locks/"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a5_v36_conflict_draft_fallback",
+        "status": "done",
+        "description": "Save stale-write payloads to .ai_conflict_draft.md and return path on 409.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "conflict draft is written under conflicts/",
+          "409 response contains draft_file path"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a6_v36_update_file_guard",
+        "status": "done",
+        "description": "Add base_etag precondition + stale conflict handling to update_file.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "core files return 428 when base_etag is missing",
+          "stale base_etag returns 409 and preserves AI draft payload"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a7_v36_append_file_guard",
+        "status": "done",
+        "description": "Add base_etag precondition + stale conflict handling to append_file.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "core files enforce base_etag",
+          "stale append requests are rejected with draft fallback"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a8_v36_gitignore_hardening",
+        "status": "done",
+        "description": "Ensure .locks/ and conflicts/ are ignored for new and existing nested repos.",
+        "target_file": "novel_git_server/utils/book_storage.py",
+        "acceptance": [
+          "BOOK_GITIGNORE includes .locks/ and conflicts/",
+          "ensure_book_git_repo patches missing entries into existing .gitignore"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a9_v36_archive_tests_conflict",
+        "status": "done",
+        "description": "Add archive tests for etag surface, precondition enforcement, and stale-write draft fallback.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "tests assert 428/409 behaviors",
+          "conflict draft files are created and returned"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a10_v36_checkout_test_sync",
+        "status": "done",
+        "description": "Sync checkout tests with new core-file base_etag precondition.",
+        "target_file": "novel_git_server/tests/test_v3_checkout.py",
+        "acceptance": [
+          "status_card update in checkout test provides base_etag",
+          "checkout regression still passes"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a11_v36_docs_sync",
+        "status": "done",
+        "description": "Update API contract docs for etag fields, precondition semantics, and conflict draft fallback.",
+        "target_file": "novel_git_server/docs/api.md",
+        "acceptance": [
+          "get_file/get_archive_range docs include etag",
+          "update/append docs include base_etag contract + 428/409 examples"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      },
+      {
+        "id": "a12_v36_regression_close",
+        "status": "done",
+        "description": "Run targeted regressions and close v36 checklist.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py, novel_git_server/tests/test_v3_checkout.py, novel_git_server/tests/test_v31_library.py, novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "archive/checkout/library suites pass under new locking + etag constraints",
+          "v36 phase is marked done with tested_at"
+        ],
+        "tested_at": "2026-02-20T02:24:36Z"
+      }
+    ]
+  },
+  "phase_v37_prepend_file_head_injection": {
+    "status": "done",
+    "goal": "Add prepend_file head-injection API with optimistic locking, short critical lock, and conflict draft fallback.",
+    "tasks": [
+      {
+        "id": "a1_v37_prepend_route_contract",
+        "status": "done",
+        "description": "Add POST /books/prepend_file route and payload contract (file_name + prepend_content).",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "route accepts book_name/book_id, file_name, prepend_content, base_etag, message, origin",
+          "invalid payloads return consistent MISSING_FIELD/INVALID_PAYLOAD errors"
+        ],
+        "tested_at": "2026-02-20T03:39:33Z"
+      },
+      {
+        "id": "a2_v37_prepend_edge_short_circuit",
+        "status": "done",
+        "description": "Short-circuit prepend when prepend_content is empty or whitespace-only.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "whitespace-only prepend returns success with unchanged message",
+          "no write and no git commit are executed in short-circuit path"
+        ],
+        "tested_at": "2026-02-20T03:39:33Z"
+      },
+      {
+        "id": "a3_v37_prepend_lock_and_etag_guard",
+        "status": "done",
+        "description": "Reuse _path_lock + _normalize_base_etag + core-file precondition and stale etag rejection.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "core files require base_etag and return 428 when missing",
+          "stale base_etag returns 409 WRITE_CONFLICT with draft fallback"
+        ],
+        "tested_at": "2026-02-20T03:39:33Z"
+      },
+      {
+        "id": "a4_v37_prepend_atomic_write",
+        "status": "done",
+        "description": "Implement prepend memory concat + atomic tempfile replace + path-scoped git commit.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "if current_content empty then new_content == prepend_content",
+          "if current_content non-empty then new_content == prepend_content + \\n\\n + current_content"
+        ],
+        "tested_at": "2026-02-20T03:39:33Z"
+      },
+      {
+        "id": "a5_v37_docs_sync",
+        "status": "done",
+        "description": "Document POST /books/prepend_file in api.md with locking and etag semantics.",
+        "target_file": "novel_git_server/docs/api.md",
+        "acceptance": [
+          "route index includes prepend_file",
+          "body/behavior/success response include base_etag and edge-case notes"
+        ],
+        "tested_at": "2026-02-20T03:39:33Z"
+      },
+      {
+        "id": "a6_v37_tests_prepend_regression",
+        "status": "done",
+        "description": "Add prepend regression tests for head injection, etag conflict, and whitespace short-circuit.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "prepend content appears at file head",
+          "stale base_etag returns 409 and writes draft",
+          "whitespace prepend short-circuits without new commit"
+        ],
+        "tested_at": "2026-02-20T03:39:33Z"
+      }
+    ]
+  },
+  "phase_v38_cold_archive_reader_api": {
+    "status": "done",
+    "goal": "Add isolated cold-archive range reader for chapter-like files with strict filename filter and token-safe 100-line cap.",
+    "tasks": [
+      {
+        "id": "a1_v38_task_intake_and_contract_lock",
+        "status": "done",
+        "description": "Lock v38 scope: add-only route, no behavior changes to get_file/get_archive_range, and cold scope rooted in chapters with root fallback.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "existing get_file/get_archive_range logic remains untouched",
+          "new endpoint uses chapter-oriented filename allowlist plus core-file blacklist"
+        ],
+        "tested_at": "2026-02-20T14:26:50Z"
+      },
+      {
+        "id": "a2_v38_filename_and_path_guard",
+        "status": "done",
+        "description": "Implement dedicated cold-archive filename regex/blacklist checks and safe resolution under chapters + root fallback.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "allow only chapter_*.md or ^\\d+.*\\.md$ names",
+          "hard-block summary.md/world_model.md/status_card.md even if requested"
+        ],
+        "tested_at": "2026-02-20T14:28:51Z"
+      },
+      {
+        "id": "a3_v38_cold_range_route",
+        "status": "done",
+        "description": "Add GET /books/get_cold_archive_range route returning status/book_id/file_name/total_lines/content/message.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "route accepts book_id|book_name + file_name + start_line + end_line",
+          "response omits etag and remains read-only"
+        ],
+        "tested_at": "2026-02-20T14:29:45Z"
+      },
+      {
+        "id": "a4_v38_line_window_cap_and_eof_smoothing",
+        "status": "done",
+        "description": "Enforce max 100-line window by truncation and smooth EOF clipping without hard failure.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "over-limit request is truncated to 100 lines with warning message",
+          "end_line beyond EOF returns available tail lines without exception"
+        ],
+        "tested_at": "2026-02-20T14:29:45Z"
+      },
+      {
+        "id": "a5_v38_tests_success_and_safety",
+        "status": "done",
+        "description": "Add regression tests for cold range success path, traversal denial, blacklist denial, and regex denial.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "chapter file can be sliced from chapters/ and root fallback",
+          "unsafe or forbidden file requests return INVALID_PAYLOAD"
+        ],
+        "tested_at": "2026-02-20T14:31:01Z"
+      },
+      {
+        "id": "a6_v38_tests_cap_and_eof",
+        "status": "done",
+        "description": "Add tests for max-lines truncation warning and EOF smoothing behavior.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "requesting >100 lines returns at most 100 lines and warning text",
+          "requesting past EOF returns success with clipped returned_end_line"
+        ],
+        "tested_at": "2026-02-20T14:31:01Z"
+      },
+      {
+        "id": "a7_v38_docs_api_sync",
+        "status": "done",
+        "description": "Document new cold archive endpoint in api.md and keep legacy contracts unchanged.",
+        "target_file": "novel_git_server/docs/api.md",
+        "acceptance": [
+          "api.md includes path, params, constraints, and examples for get_cold_archive_range",
+          "no contract edits are introduced for get_file/get_archive_range sections"
+        ],
+        "tested_at": "2026-02-20T14:32:05Z"
+      },
+      {
+        "id": "a8_v38_targeted_regression",
+        "status": "done",
+        "description": "Run targeted archive test suite to validate new route and backward compatibility.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "new tests pass",
+          "existing archive tests remain green"
+        ],
+        "tested_at": "2026-02-20T14:31:01Z"
+      },
+      {
+        "id": "a9_v38_progress_log_writeback",
+        "status": "done",
+        "description": "Append v38 implementation evidence to progress_log.md.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "acceptance": [
+          "log records task-wise changes, results, and verification commands",
+          "timestamps and outcomes are explicit"
+        ],
+        "tested_at": "2026-02-20T14:32:58Z"
+      },
+      {
+        "id": "a10_v38_close_and_schema_output",
+        "status": "done",
+        "description": "Close v38 checklist and provide OpenAPI schema snippet for the new endpoint.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "phase_v38 status changes to done with tested_at fields",
+          "OpenAPI path schema for get_cold_archive_range is ready for agent wiring"
+        ],
+        "tested_at": "2026-02-20T14:32:58Z"
+      }
+    ]
+  },
+  "phase_v39_cold_archive_prefix_hit": {
+    "status": "done",
+    "goal": "Improve cold archive hit rate by adding numeric-prefix fallback matching and exposing actual matched filename.",
+    "tasks": [
+      {
+        "id": "a1_v39_contract_lock",
+        "status": "done",
+        "description": "Freeze minimal-change scope: keep existing get_file/get_archive_range untouched and only enhance cold archive resolver.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "no contract changes to get_file/get_archive_range",
+          "new logic focuses on get_cold_archive_range resolver and response enrichment"
+        ],
+        "tested_at": "2026-02-20T15:21:59Z"
+      },
+      {
+        "id": "a2_v39_numeric_extract_helper",
+        "status": "done",
+        "description": "Add numeric extraction helper supporting inputs like 95.md, chapter95, 095 and normalize to 4-digit key.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "extracts first numeric token and pads to 4 digits",
+          "returns None when no numeric token is present"
+        ],
+        "tested_at": "2026-02-20T15:23:21Z"
+      },
+      {
+        "id": "a3_v39_prefix_scan_resolver",
+        "status": "done",
+        "description": "Add chapters-directory prefix scan fallback for files starting with <zero-padded-index>_.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "after exact match miss, resolver scans chapters/ for 4-digit prefix hits",
+          "match selection is deterministic under multiple hits"
+        ],
+        "tested_at": "2026-02-20T15:23:21Z"
+      },
+      {
+        "id": "a4_v39_route_response_real_name",
+        "status": "done",
+        "description": "Expose real_file_name in get_cold_archive_range response to report the physical matched file.",
+        "target_file": "novel_git_server/agents/archive.py",
+        "acceptance": [
+          "response includes real_file_name on success",
+          "existing response fields remain backward compatible"
+        ],
+        "tested_at": "2026-02-20T15:23:21Z"
+      },
+      {
+        "id": "a5_v39_tests_prefix_hit",
+        "status": "done",
+        "description": "Add tests for 95.md/chapter95/095 prefix fallback resolution.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "all three forms resolve to the same 0095_* chapter file",
+          "response real_file_name reflects actual filename"
+        ],
+        "tested_at": "2026-02-20T15:24:12Z"
+      },
+      {
+        "id": "a6_v39_tests_no_number_and_safety",
+        "status": "done",
+        "description": "Add tests for no-number miss path plus blacklist and traversal guards retained.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py",
+        "acceptance": [
+          "non-numeric invalid names are still rejected with INVALID_PAYLOAD",
+          "core blacklist and traversal rejection behavior stays unchanged"
+        ],
+        "tested_at": "2026-02-20T15:24:12Z"
+      },
+      {
+        "id": "a7_v39_docs_and_schema_sync",
+        "status": "done",
+        "description": "Update api.md with prefix fallback rules and real_file_name field; provide JSON Schema for endpoint.",
+        "target_file": "novel_git_server/docs/api.md",
+        "acceptance": [
+          "docs describe exact->prefix fallback order and 4-digit normalization",
+          "JSON Schema includes real_file_name"
+        ],
+        "tested_at": "2026-02-20T15:24:54Z"
+      },
+      {
+        "id": "a8_v39_regression_and_close",
+        "status": "done",
+        "description": "Run archive regression suite, update progress log, and close v39 checklist.",
+        "target_file": "novel_git_server/tests/test_v31_archive.py, novel_git_server/docs/progress_log.md, novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "test_v31_archive passes with new fallback behavior",
+          "progress and checklist are fully synchronized with timestamps"
+        ],
+        "tested_at": "2026-02-20T15:25:31Z"
+      }
+    ]
+  },
+  "phase_v40_frontend_handover_protocol": {
+    "status": "done",
+    "goal": "Consolidate current architecture decisions, API contracts, and atomic development SOP into a handover document for frontend and integration work.",
+    "tasks": [
+      {
+        "id": "a1_v40_scope_lock",
+        "status": "done",
+        "description": "Lock handover scope and deliverables: architecture snapshot + Dify linkage + single-file loop + atomic workflow SOP.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "handover doc covers frontend->flask->dify chain and world_model single-file loop",
+          "handover doc includes atomic development protocol used in this repository"
+        ],
+        "tested_at": "2026-02-21T03:48:01Z"
+      },
+      {
+        "id": "a2_v40_handover_doc",
+        "status": "done",
+        "description": "Create handover protocol markdown under docs with system topology, contracts, risks, and next execution plan.",
+        "target_file": "novel_git_server/docs/handover_protocol.md",
+        "acceptance": [
+          "document is actionable for new contributor without oral context",
+          "document explicitly lists canonical filenames and key API endpoints"
+        ],
+        "tested_at": "2026-02-21T03:49:01Z"
+      },
+      {
+        "id": "a3_v40_progress_log_writeback",
+        "status": "done",
+        "description": "Append v40 handover generation record into progress_log.md.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "acceptance": [
+          "progress log records handover purpose, artifacts, and verification approach"
+        ],
+        "tested_at": "2026-02-21T03:49:32Z"
+      },
+      {
+        "id": "a4_v40_close_phase",
+        "status": "done",
+        "description": "Close v40 checklist phase after document and log are synchronized.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "phase status is done with tested_at timestamps",
+          "working tree remains clean after atomic commits"
+        ],
+        "tested_at": "2026-02-21T03:49:32Z"
+      }
+    ]
+  },
+  "phase_v41_openapi_toolset_alignment": {
+    "status": "done",
+    "goal": "Publish a Dify-ready OpenAPI toolset spec fully aligned with implemented backend contracts and conflict semantics.",
+    "tasks": [
+      {
+        "id": "a1_v41_scope_lock",
+        "status": "done",
+        "description": "Lock v41 scope to OpenAPI contract alignment only (no runtime code changes).",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "cover read/write/archive/highlight endpoints currently implemented",
+          "reflect real ETag and conflict semantics for core archive writes"
+        ],
+        "tested_at": "2026-02-21T04:12:32Z"
+      },
+      {
+        "id": "a2_v41_openapi_spec_doc",
+        "status": "done",
+        "description": "Create aligned OpenAPI JSON spec for Dify tool import under docs.",
+        "target_file": "novel_git_server/docs/openapi_v3_4_4_aligned.json",
+        "acceptance": [
+          "book_id/book_name addressing compatibility is documented",
+          "cold archive response includes real_file_name and no etag",
+          "core write endpoints include 428/409 error semantics"
+        ],
+        "tested_at": "2026-02-21T04:14:17Z"
+      },
+      {
+        "id": "a3_v41_progress_log_writeback",
+        "status": "done",
+        "description": "Append v41 OpenAPI alignment delivery record to progress_log.md.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "acceptance": [
+          "progress log captures alignment rationale and artifact path"
+        ],
+        "tested_at": "2026-02-21T04:14:46Z"
+      },
+      {
+        "id": "a4_v41_close_phase",
+        "status": "done",
+        "description": "Close v41 checklist after spec and log are synced.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "phase status is done with tested_at timestamps",
+          "working tree is clean after atomic commits"
+        ],
+        "tested_at": "2026-02-21T04:14:46Z"
+      }
+    ]
+  },
+  "phase_v42_openapi_description_localization": {
+    "status": "done",
+    "goal": "Translate all OpenAPI description fields to Chinese for consistent tool UX in Dify.",
+    "tasks": [
+      {
+        "id": "a1_v42_scope_lock",
+        "status": "done",
+        "description": "Lock scope to description localization only on aligned OpenAPI file.",
+        "target_file": "novel_git_server/docs/openapi_v3_4_4_aligned.json",
+        "acceptance": [
+          "all description fields in aligned OpenAPI file are Chinese",
+          "no endpoint schema shape changes"
+        ],
+        "tested_at": "2026-02-21T04:18:44Z"
+      },
+      {
+        "id": "a2_v42_translate_descriptions",
+        "status": "done",
+        "description": "Translate info/operation/parameter/response/schema description texts to Chinese.",
+        "target_file": "novel_git_server/docs/openapi_v3_4_4_aligned.json",
+        "acceptance": [
+          "JSON remains valid after localization",
+          "all previous English description values are replaced"
+        ],
+        "tested_at": "2026-02-21T04:19:46Z"
+      },
+      {
+        "id": "a3_v42_progress_log_writeback",
+        "status": "done",
+        "description": "Append v42 localization record to progress_log.md.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "acceptance": [
+          "log includes localization scope and verification command"
+        ],
+        "tested_at": "2026-02-21T04:20:15Z"
+      },
+      {
+        "id": "a4_v42_close_phase",
+        "status": "done",
+        "description": "Close v42 checklist phase after localization and log sync.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "phase status done with tested_at timestamps",
+          "working tree clean after atomic commits"
+        ],
+        "tested_at": "2026-02-21T04:20:15Z"
+      }
+    ]
+  },
+  "phase_v43_openapi_cn_polish": {
+    "status": "done",
+    "goal": "Polish remaining OpenAPI description wording to full Chinese expression while preserving technical semantics.",
+    "tasks": [
+      {
+        "id": "a1_v43_scope_lock",
+        "status": "done",
+        "description": "Lock scope to language polish only for description values in aligned OpenAPI file.",
+        "target_file": "novel_git_server/docs/openapi_v3_4_4_aligned.json",
+        "acceptance": [
+          "no endpoint or schema structure changes",
+          "description wording becomes fully Chinese-oriented"
+        ],
+        "tested_at": "2026-02-21T04:21:17Z"
+      },
+      {
+        "id": "a2_v43_polish_apply",
+        "status": "done",
+        "description": "Replace residual English-centered wording in description fields with Chinese equivalents.",
+        "target_file": "novel_git_server/docs/openapi_v3_4_4_aligned.json",
+        "acceptance": [
+          "json.tool validation passes",
+          "no description starts with English wording"
+        ],
+        "tested_at": "2026-02-21T04:21:48Z"
+      },
+      {
+        "id": "a3_v43_progress_log_writeback",
+        "status": "done",
+        "description": "Append v43 polish record into progress_log.md.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "acceptance": [
+          "log includes wording polish scope and validation command"
+        ],
+        "tested_at": "2026-02-21T04:22:18Z"
+      },
+      {
+        "id": "a4_v43_close_phase",
+        "status": "done",
+        "description": "Close v43 phase after polish and logs are synchronized.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "phase status done with tested_at timestamps",
+          "working tree clean"
+        ],
+        "tested_at": "2026-02-21T04:22:18Z"
+      }
+    ]
+  },
+  "phase_v44_world_draft_branching": {
+    "status": "done",
+    "goal": "Implement world-model draft-branch workflow so human/AI micro-iterations happen on draft branch and merge into mainline only after explicit confirmation.",
+    "tasks": [
+      {
+        "id": "a1_v44_scope_and_checklist_writeback",
+        "status": "done",
+        "description": "Lock v44 scope and write the atomic execution checklist before any code changes.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "checklist includes sync/rollback/confirm API coverage",
+          "checklist includes dedicated regression tests"
+        ],
+        "tested_at": "2026-02-21T04:37:11Z"
+      },
+      {
+        "id": "a2_v44_add_gitpython_dependency",
+        "status": "done",
+        "description": "Add GitPython dependency for git.Repo-based branch orchestration.",
+        "target_file": "novel_git_server/requirements.txt",
+        "acceptance": [
+          "requirements includes GitPython pin range",
+          "runtime import path does not break existing routes"
+        ],
+        "tested_at": "2026-02-21T04:45:18Z"
+      },
+      {
+        "id": "a3_v44_world_draft_blueprint",
+        "status": "done",
+        "description": "Create world draft blueprint implementing POST /api/world/sync with draft branch bootstrap, human commit, AI placeholder call, and AI commit.",
+        "target_file": "novel_git_server/agents/world_draft.py",
+        "acceptance": [
+          "creates draft/world_model from mainline if missing",
+          "returns latest markdown, commit hash, and active branch"
+        ],
+        "tested_at": "2026-02-21T04:45:18Z"
+      },
+      {
+        "id": "a4_v44_world_draft_rollback_confirm",
+        "status": "done",
+        "description": "Implement POST /api/world/rollback and POST /api/world/confirm with branch-safe reset/merge/delete flow.",
+        "target_file": "novel_git_server/agents/world_draft.py",
+        "acceptance": [
+          "rollback resets draft branch to target hash",
+          "confirm merges draft branch into mainline and deletes draft branch"
+        ],
+        "tested_at": "2026-02-21T04:45:18Z"
+      },
+      {
+        "id": "a5_v44_app_blueprint_registration",
+        "status": "done",
+        "description": "Register world draft blueprint in app factory without breaking existing routes.",
+        "target_file": "novel_git_server/app.py",
+        "acceptance": [
+          "new APIs are reachable under /api/world/*",
+          "legacy route guard remains intact"
+        ],
+        "tested_at": "2026-02-21T04:45:18Z"
+      },
+      {
+        "id": "a6_v44_world_draft_tests",
+        "status": "done",
+        "description": "Add regression tests for sync bootstrap, rollback behavior, and confirm merge branch cleanup.",
+        "target_file": "novel_git_server/tests/test_v44_world_draft.py",
+        "acceptance": [
+          "sync path creates draft branch and returns commit hash",
+          "rollback restores earlier content on draft branch",
+          "confirm merges into mainline and deletes draft branch"
+        ],
+        "tested_at": "2026-02-21T04:45:18Z"
+      },
+      {
+        "id": "a7_v44_regression_run",
+        "status": "done",
+        "description": "Run targeted unittest suite for v44 and impacted existing addressing flow.",
+        "target_file": "novel_git_server/tests/test_v44_world_draft.py, novel_git_server/tests/test_v31_addressing.py",
+        "acceptance": [
+          "new v44 tests pass",
+          "existing /commit_world_state flow remains passing"
+        ],
+        "tested_at": "2026-02-21T04:45:18Z"
+      },
+      {
+        "id": "a8_v44_api_docs_sync",
+        "status": "done",
+        "description": "Document draft branch APIs in docs/api.md with payload and response semantics.",
+        "target_file": "novel_git_server/docs/api.md",
+        "acceptance": [
+          "api.md includes /api/world/sync|rollback|confirm",
+          "documents draft branch lifecycle and error codes"
+        ],
+        "tested_at": "2026-02-21T04:45:18Z"
+      },
+      {
+        "id": "a9_v44_progress_log_writeback",
+        "status": "done",
+        "description": "Append implementation and verification evidence to progress_log.md.",
+        "target_file": "novel_git_server/docs/progress_log.md",
+        "acceptance": [
+          "progress log captures each major v44 task group",
+          "verification commands and results are recorded"
+        ],
+        "tested_at": "2026-02-21T04:45:18Z"
+      },
+      {
+        "id": "a10_v44_close_phase",
+        "status": "done",
+        "description": "Close v44 checklist after code/tests/docs/log are synchronized.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "all v44 tasks marked done with tested_at",
+          "phase status is done"
+        ],
+        "tested_at": "2026-02-21T04:45:18Z"
+      }
+    ]
+  },
+  "phase_v45_unified_draft_sandbox": {
+    "status": "done",
+    "goal": "Unify all AI hot-memory writes into a single draft sandbox branch and expose minimal draft APIs: sync_all / confirm / rollback.",
+    "tasks": [
+      {
+        "id": "a1_v45_scope_lock",
+        "status": "done",
+        "description": "Freeze v45 scope and register atomic checklist before code changes.",
+        "target_file": "novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "scope includes sync_all, draft confirm/rollback rename, draft branch rename, and minimal OpenAPI output",
+          "legacy world routes are handled with backward-compatible aliases"
+        ],
+        "tested_at": "2026-02-22T15:30:52Z"
+      },
+      {
+        "id": "a2_v45_branch_namespace_refactor",
+        "status": "done",
+        "description": "Rename draft branch namespace from draft/world_model to draft/sandbox and add legacy branch migration helper.",
+        "target_file": "novel_git_server/agents/world_draft.py",
+        "acceptance": [
+          "runtime targets draft/sandbox as canonical branch",
+          "legacy draft/world_model is migrated when encountered"
+        ],
+        "tested_at": "2026-02-22T15:41:12Z"
+      },
+      {
+        "id": "a3_v45_sync_all_contract",
+        "status": "done",
+        "description": "Add POST /api/draft/sync_all payload parser and validation for writes array with op/update|append|prepend.",
+        "target_file": "novel_git_server/agents/world_draft.py",
+        "acceptance": [
+          "requires non-empty writes array",
+          "rejects invalid op and duplicate target files"
+        ],
+        "tested_at": "2026-02-22T15:41:12Z"
+      },
+      {
+        "id": "a4_v45_etag_preflight",
+        "status": "done",
+        "description": "Integrate ETag optimistic-lock preflight for all files before any disk write occurs.",
+        "target_file": "novel_git_server/agents/world_draft.py",
+        "acceptance": [
+          "core files require base_etag and return 428 if missing",
+          "stale etag returns 409 with conflict draft fallback"
+        ],
+        "tested_at": "2026-02-22T15:41:12Z"
+      },
+      {
+        "id": "a5_v45_atomic_multifile_write",
+        "status": "done",
+        "description": "Implement multi-file atomic write with tempfile+replace and full rollback on failure.",
+        "target_file": "novel_git_server/agents/world_draft.py",
+        "acceptance": [
+          "any failure restores all files to pre-call state",
+          "no partial write survives crash path in handled exceptions"
+        ],
+        "tested_at": "2026-02-22T15:41:12Z"
+      },
+      {
+        "id": "a6_v45_single_commit_transaction",
+        "status": "done",
+        "description": "Commit all staged sync_all file updates as one draft-branch transaction commit.",
+        "target_file": "novel_git_server/agents/world_draft.py",
+        "acceptance": [
+          "single commit_id returned for a sync_all batch",
+          "path-scoped add/commit avoids unrelated staging pollution"
+        ],
+        "tested_at": "2026-02-22T15:41:12Z"
+      },
+      {
+        "id": "a7_v45_route_namespace_converge",
+        "status": "done",
+        "description": "Expose POST /api/draft/confirm and POST /api/draft/rollback as canonical routes.",
+        "target_file": "novel_git_server/agents/world_draft.py",
+        "acceptance": [
+          "draft namespace routes are active and documented",
+          "confirm/rollback operate on draft/sandbox"
+        ],
+        "tested_at": "2026-02-22T15:41:12Z"
+      },
+      {
+        "id": "a8_v45_backward_alias",
+        "status": "done",
+        "description": "Retain /api/world/confirm and /api/world/rollback as deprecated aliases to avoid abrupt caller breakage.",
+        "target_file": "novel_git_server/agents/world_draft.py",
+        "acceptance": [
+          "legacy routes delegate to draft handlers",
+          "response includes deprecation warning field"
+        ],
+        "tested_at": "2026-02-22T15:41:12Z"
+      },
+      {
+        "id": "a9_v45_regression_tests",
+        "status": "done",
+        "description": "Add and run regression tests for sync_all success, atomic conflict failure, and draft confirm/rollback flow.",
+        "target_file": "novel_git_server/tests/test_v45_draft_sync_all.py",
+        "acceptance": [
+          "sync_all updates multi-file payload in one draft commit",
+          "etag conflict blocks all writes and leaves no commit",
+          "confirm merges to mainline and rollback resets draft"
+        ],
+        "tested_at": "2026-02-22T15:41:12Z"
+      },
+      {
+        "id": "a10_v45_openapi_draft_only",
+        "status": "done",
+        "description": "Publish minimal OpenAPI JSON containing only sync_all, draft confirm, and draft rollback.",
+        "target_file": "novel_git_server/docs/openapi_v3_5_1_draft_min.json",
+        "acceptance": [
+          "contains only 3 draft endpoints",
+          "schemas reflect runtime fields and error semantics"
+        ],
+        "tested_at": "2026-02-22T15:41:12Z"
+      },
+      {
+        "id": "a11_v45_log_and_close",
+        "status": "done",
+        "description": "Write progress log evidence and close v45 checklist phase.",
+        "target_file": "novel_git_server/docs/progress_log.md, novel_git_server/docs/feature_checklist.json",
+        "acceptance": [
+          "progress includes commands and verification results",
+          "all tasks are marked done with timestamps and phase status done"
+        ],
+        "tested_at": "2026-02-22T15:41:12Z"
+      }
+    ]
+  },
+  "phase_v45_frontend": {
+    "status": "completed",
+    "goal": "Build the IDE console shell with strict FSM-driven single-direction data flow and causal draft reviews (Extreme Mechanical Atomic Edition).",
+    "tasks": [
+      {
+        "id": "1.1.1",
+        "status": "completed",
+        "description": "package.json Update - 仅执行 Vite + React + TS、Tailwind、Zustand、Monaco 依赖安装",
+        "target_file": "package.json",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "1.1.2",
+        "status": "completed",
+        "description": "tailwind.config.js Create - 仅写入 Tailwind 暗黑模式基础配置",
+        "target_file": "tailwind.config.js",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "1.1.3",
+        "status": "completed",
+        "description": "src/index.css Create - 仅写入 Tailwind 基础指令集",
+        "target_file": "src/index.css",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "1.2.1",
+        "status": "completed",
+        "description": "src/types/store.d.ts Create - 仅定义 FsmState 枚举与 CoreSessionState 接口",
+        "target_file": "src/types/store.d.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "1.3.1",
+        "status": "completed",
+        "description": "src/store/index.ts Create - 仅初始化 Zustand 实例，设定默认初始值",
+        "target_file": "src/store/index.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "1.3.2",
+        "status": "completed",
+        "description": "src/store/index.ts Update - 仅注入 setFsmState 和 setAddressingContext",
+        "target_file": "src/store/index.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "1.3.3",
+        "status": "completed",
+        "description": "src/store/index.ts Update - 仅注入 setMainlineFact 和 setSandboxDraft",
+        "target_file": "src/store/index.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "1.3.4",
+        "status": "completed",
+        "description": "src/store/index.ts Update - 仅注入 resetSandbox 清理 Action",
+        "target_file": "src/store/index.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "2.1.1",
+        "status": "completed",
+        "description": "src/layouts/AppLayout.tsx Create - 仅搭建基于 CSS Grid 的左中右三栏外壳",
+        "target_file": "src/layouts/AppLayout.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "2.2.1",
+        "status": "completed",
+        "description": "src/components/CommandPrompt.tsx Create - 仅创建纯 UI 输入框",
+        "target_file": "src/components/CommandPrompt.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "2.2.2",
+        "status": "completed",
+        "description": "src/components/CommandPrompt.tsx Update - 引入 Zustand，将 input disable 绑定状态",
+        "target_file": "src/components/CommandPrompt.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "2.3.1",
+        "status": "completed",
+        "description": "src/components/MainlineView.tsx Create - 仅封装 Monaco 基础只读组件",
+        "target_file": "src/components/MainlineView.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "2.3.2",
+        "status": "completed",
+        "description": "src/components/MainlineView.tsx Update - 引入 Zustand，绑定 mainlineContent",
+        "target_file": "src/components/MainlineView.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "2.4.1",
+        "status": "completed",
+        "description": "src/components/SandboxView.tsx Create - 仅封装 Monaco DiffEditor 空壳",
+        "target_file": "src/components/SandboxView.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "2.4.2",
+        "status": "completed",
+        "description": "src/components/SandboxView.tsx Update - 引入 Zustand，绑定 Diff 状态内容",
+        "target_file": "src/components/SandboxView.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "2.5.1",
+        "status": "completed",
+        "description": "src/components/ActionBar.tsx Create - 仅创建纯 UI 的 Confirm 与 Rollback 按钮",
+        "target_file": "src/components/ActionBar.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "2.5.2",
+        "status": "completed",
+        "description": "src/components/ActionBar.tsx Update - 引入 Zustand，控制按钮显示隐藏与禁用",
+        "target_file": "src/components/ActionBar.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "3.1.1",
+        "status": "completed",
+        "description": "src/api/client.ts Create - 仅配置基础 Fetch 封装与 BaseURL",
+        "target_file": "src/api/client.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "3.1.2",
+        "status": "completed",
+        "description": "src/api/client.ts Update - 仅追加全局 409/428 错误捕获",
+        "target_file": "src/api/client.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "3.2.1",
+        "status": "completed",
+        "description": "src/api/checkout.ts Create - 仅实现 /books/get_file 取锁方法",
+        "target_file": "src/api/checkout.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "3.3.1",
+        "status": "completed",
+        "description": "src/api/orchestration.ts Create - 仅定义 runDeduction 方法签名",
+        "target_file": "src/api/orchestration.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "3.3.2",
+        "status": "completed",
+        "description": "src/api/orchestration.ts Update - 仅实现 runDeduction 函数体调用 sync_all",
+        "target_file": "src/api/orchestration.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "3.4.1",
+        "status": "completed",
+        "description": "src/api/draft.ts Create - 仅实现 /api/draft/confirm",
+        "target_file": "src/api/draft.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "3.4.2",
+        "status": "completed",
+        "description": "src/api/draft.ts Update - 仅实现 /api/draft/rollback",
+        "target_file": "src/api/draft.ts",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "4.1.1",
+        "status": "completed",
+        "description": "src/App.tsx Create - 引入布局及所有 UI 积木，静态装配",
+        "target_file": "src/App.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "4.2.1",
+        "status": "completed",
+        "description": "src/App.tsx Update - 绑定 useEffect 挂载时调用 fetchMainlineFile",
+        "target_file": "src/App.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "4.3.1",
+        "status": "completed",
+        "description": "src/App.tsx Update - 绑定推演逻辑到 CommandPrompt",
+        "target_file": "src/App.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "4.4.1",
+        "status": "completed",
+        "description": "src/App.tsx Update - 绑定裁决逻辑到 ActionBar",
+        "target_file": "src/App.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "4.5.1",
+        "status": "completed",
+        "description": "src/components/ConflictBanner.tsx Create - 仅创建显示 409 警告的 UI",
+        "target_file": "src/components/ConflictBanner.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      },
+      {
+        "id": "4.5.2",
+        "status": "completed",
+        "description": "src/App.tsx Update - 捕获 409 异常并渲染 ConflictBanner",
+        "target_file": "src/App.tsx",
+        "tested_at": "2026-02-23T05:20:30Z",
+        "acceptance": []
+      }
+    ]
+  }
+}

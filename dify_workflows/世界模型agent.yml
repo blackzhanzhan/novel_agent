@@ -1,0 +1,1406 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: 世界模型agent
+  use_icon_as_answer_icon: false
+dependencies: []
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables:
+    sys_current_state:
+      id: 2220e316-0ff5-4ca3-8306-896079a7bd01
+      name: sys_current_state
+      value: ''
+      selector:
+      - conversation
+      - sys_current_state
+      value_type: string
+      description: ''
+  environment_variables: []
+  features:
+    file_upload:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      enabled: false
+      number_limits: 3
+      fileUploadConfig:
+        file_size_limit: 15
+        batch_count_limit: 5
+        file_upload_limit: 20
+        audio_file_size_limit: 50
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        image_file_batch_limit: 10
+        workflow_file_upload_limit: 10
+        single_chunk_attachment_limit: 10
+        attachment_image_file_size_limit: 2
+      allowed_file_types:
+      - image
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+    speech_to_text:
+      enabled: false
+    text_to_speech:
+      voice: ''
+      enabled: false
+      language: ''
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    suggested_questions: []
+    sensitive_word_avoidance:
+      enabled: false
+    suggested_questions_after_answer:
+      enabled: false
+  graph:
+    edges:
+    - id: 1771421946669-1-1771422683845-target
+      data:
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: agent
+        isInIteration: false
+      type: custom
+      source: '1771421946669'
+      target: '1771422683845'
+      zIndex: 0
+      selected: false
+      sourceHandle: '1'
+      targetHandle: target
+    - id: 1771421946669-2-1771422700591-target
+      data:
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: agent
+        isInIteration: false
+      type: custom
+      source: '1771421946669'
+      target: '1771422700591'
+      zIndex: 0
+      selected: false
+      sourceHandle: '2'
+      targetHandle: target
+    - id: 1771421946669-1771422209831-1771422703218-target
+      data:
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: agent
+        isInIteration: false
+      type: custom
+      source: '1771421946669'
+      target: '1771422703218'
+      zIndex: 0
+      selected: false
+      sourceHandle: '1771422209831'
+      targetHandle: target
+    - id: 1771421946669-1771426272662-1771426358783-target
+      data:
+        isInLoop: false
+        sourceType: question-classifier
+        targetType: if-else
+        isInIteration: false
+      type: custom
+      source: '1771421946669'
+      target: '1771426358783'
+      zIndex: 0
+      selected: false
+      sourceHandle: '1771426272662'
+      targetHandle: target
+    - id: 1771426358783-true-1771422683845-target
+      data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: agent
+      type: custom
+      source: '1771426358783'
+      target: '1771422683845'
+      zIndex: 0
+      selected: false
+      sourceHandle: 'true'
+      targetHandle: target
+    - id: 1771426358783-19480d9d-85ce-477d-abaa-e94dd2c0b9b5-1771422700591-target
+      data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: agent
+      type: custom
+      source: '1771426358783'
+      target: '1771422700591'
+      zIndex: 0
+      selected: false
+      sourceHandle: 19480d9d-85ce-477d-abaa-e94dd2c0b9b5
+      targetHandle: target
+    - id: 1771426358783-ddd65e8a-d974-4f4e-866a-6700a1759e54-1771422703218-target
+      data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: agent
+      type: custom
+      source: '1771426358783'
+      target: '1771422703218'
+      zIndex: 0
+      selected: false
+      sourceHandle: ddd65e8a-d974-4f4e-866a-6700a1759e54
+      targetHandle: target
+    - id: 1771426358783-false-1771427624855-target
+      data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: agent
+        isInIteration: false
+      type: custom
+      source: '1771426358783'
+      target: '1771422700591'
+      zIndex: 0
+      selected: false
+      sourceHandle: 'false'
+      targetHandle: target
+    - id: 1771043785912-source-1771421946669-target
+      data:
+        isInLoop: false
+        sourceType: start
+        targetType: question-classifier
+      type: custom
+      source: '1771043785912'
+      target: '1771421946669'
+      zIndex: 0
+      selected: false
+      sourceHandle: source
+      targetHandle: target
+    - id: 1771422683845-source-1771487817495-target
+      data:
+        isInLoop: false
+        sourceType: agent
+        targetType: answer
+        isInIteration: false
+      type: custom
+      source: '1771422683845'
+      target: '1771487817495'
+      zIndex: 0
+      selected: false
+      sourceHandle: source
+      targetHandle: target
+    - id: 1771422700591-source-1771487820225-target
+      data:
+        isInLoop: false
+        sourceType: agent
+        targetType: answer
+        isInIteration: false
+      type: custom
+      source: '1771422700591'
+      target: '1771487820225'
+      zIndex: 0
+      selected: false
+      sourceHandle: source
+      targetHandle: target
+    - id: 1771422703218-source-1771487822252-target
+      data:
+        isInLoop: false
+        sourceType: agent
+        targetType: answer
+        isInIteration: false
+      type: custom
+      source: '1771422703218'
+      target: '1771487822252'
+      zIndex: 0
+      selected: false
+      sourceHandle: source
+      targetHandle: target
+    nodes:
+    - id: '1771043785912'
+      data:
+        type: start
+        title: 用户输入
+        selected: false
+        variables:
+        - hint: ''
+          type: text-input
+          label: 书名
+          default: ''
+          options: []
+          required: true
+          variable: book_name
+          placeholder: ''
+        - hint: ''
+          type: text-input
+          label: book_id
+          default: ''
+          options: []
+          required: false
+          variable: book_id
+          placeholder: ''
+        - hint: ''
+          type: text-input
+          label: active_file
+          default: ''
+          options: []
+          required: true
+          variable: active_file
+          placeholder: ''
+      type: custom
+      width: 242
+      height: 134
+      position:
+        x: 0
+        y: 287
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 0
+        y: 287
+    - id: '1771421946669'
+      data:
+        type: question-classifier
+        model:
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+          completion_params:
+            thinking: true
+            temperature: 0
+            reasoning_effort: high
+        title: 意图分发器
+        vision:
+          enabled: false
+        classes:
+        - id: '1'
+          name: '核心关键词：从零开始、新书、初始化、建档、加载 summary。
+
+            排他条件：只要指令中包含“开始一本书”或“初始”且没有具体的剧情分析，就进这里。'
+        - id: '2'
+          name: '核心关键词：解析原文、读取章节、分析剧情、更新状态、同步变动。
+
+            判断逻辑：凡是涉及“小说原文内容”“根据第 X 章修改”“角色在原文里做过什么”“已有设定如何约束后续”的请求，归为此类。
+
+            注意：这是最频繁的分类，处理的是作品内部逻辑、世界模型和状态同步。'
+        - id: '1771422209831'
+          name: '核心关键词：联网搜索、现实考据、查证规则、地理环境、行业常识、技术限制。
+
+            判断逻辑：凡是要求“查一下现实中...”“搜一下...”“考据...”或需要外部真实世界资料校准设定的请求，归为此类。
+
+            注意：只把外部资料转化为可服务创作的设定边界，不替代书内事实。'
+        - id: '1771426272662'
+          name: '选项回应: 用户输入了极短的数字或选项词，如：“1”、“2”、“3”、“选第一项”、“A”。
+
+            顺承语气: 用户输入了缺乏独立上下文的顺承词，如：“继续”、“好的”、“执行”、“下一步”、“接着查”、“就按这个来”。
+
+            核心判别法: 如果你孤立地看用户的这句话，完全不知道他具体要干什么（比如只说了一个“继续”），请毫不犹豫地将其丢入本分支。系统后续的“条件分支器”会根据底层变量接管它。'
+        selected: false
+        instructions: ''
+        query_variable_selector:
+        - sys
+        - query
+      type: custom
+      width: 241
+      height: 245
+      position:
+        x: 342
+        y: 231
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 342
+        y: 231
+    - id: '1771422683845'
+      data:
+        meta:
+          version: 0.0.2
+          minimum_dify_version: 1.7.0
+        type: agent
+        title: INIT_AGENT
+        memory:
+          window:
+            size: 6
+            enabled: true
+          query_prompt_template: '{{#sys.query#}}
+
+
+            {{#sys.files#}}'
+        selected: false
+        output_schema: {}
+        agent_parameters:
+          model:
+            type: constant
+            value:
+              mode: chat
+              type: model-selector
+              model: deepseek-v4-flash
+              provider: langgenius/deepseek/deepseek
+              model_type: llm
+              completion_params:
+                thinking: true
+                reasoning_effort: high
+          query:
+            type: constant
+            value: '当前 book_id：{{#1771043785912.book_id#}}
+
+              当前书籍：{{#1771043785912.book_name#}}
+
+              当前目标文件：{{#1771043785912.active_file#}}
+
+              用户请求：{{#sys.query#}}
+
+
+              你是已退役的初始化入口。初始化职责已退役，world_model.md 与 status_card.md 的首次生成由后端批处理管线负责，入口是 /api/world/init_batch_pipeline。
+
+              不得调用写入工具；不得调用 draft_append_markdown_section；不得调用 draft_replace_markdown_section。
+
+              若用户要求初始化、建档、重建、双写、双核心或双底座，只说明应走本地后端批处理管线。若用户是在解释已有文件，只做初始化后阶段小范围读取说明。'
+          tools:
+            type: constant
+            value:
+            - type: api
+              extra:
+                description: 【核心雷达/取锁通道】读取核心归档文件完整内容并返回 etag。在调用 legacy full-file write tool 前，必须使用此工具获取目标文件的最新 base_etag。
+              enabled: true
+              settings: {}
+              tool_name: get_core_archive
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_core_archive
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【核心雷达/取锁通道】读取核心归档文件完整内容并返回 etag。在调用 legacy full-file write tool 前，必须使用此工具获取目标文件的最新 base_etag。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【核心档案狙击通道】按行读取核心文件窗口，单次上限 500 行，返回全文件 etag。推荐用于读取 summary 局部或 world_model/status_card 的小窗核对。
+              enabled: true
+              settings: {}
+              tool_name: get_archive_range
+              parameters:
+                book_id:
+                  auto: 1
+                end_line:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                start_line:
+                  auto: 1
+              tool_label: get_archive_range
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【核心档案狙击通道】按行读取核心文件窗口，单次上限 500 行，返回全文件 etag。推荐用于读取 summary 局部或 world_model/status_card 的小窗核对。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【语义穿刺雷达】通过关键词绕过格式崩坏读取章节碎片。返回匹配句子及其上下文。
+              enabled: true
+              settings: {}
+              tool_name: extract_chapter_highlights
+              parameters:
+                book_id:
+                  auto: 1
+                keywords:
+                  auto: 1
+                book_name:
+                  auto: 1
+                chapter_index:
+                  auto: 1
+                context_sentences:
+                  auto: 1
+              tool_label: extract_chapter_highlights
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【语义穿刺雷达】通过关键词绕过格式崩坏读取章节碎片。返回匹配句子及其上下文。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【Markdown 标题树目录】读取目标 Markdown 文件的规范标题树。推荐作为首选阅读入口，用于定位 canonical section_path。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_outline
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_markdown_outline
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【Markdown 标题树目录】读取目标 Markdown 文件的规范标题树。推荐作为首选阅读入口，用于定位 canonical section_path。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【Markdown 区块提取】按规范 section_path 读取 Markdown 局部区块。建议先通过 get_markdown_outline 获取 canonical path。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_section
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: get_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【Markdown 区块提取】按规范 section_path 读取 Markdown 局部区块。建议先通过 get_markdown_outline 获取 canonical path。
+              provider_show_name: LoreGit 后端工具集
+          instruction:
+            type: constant
+            value: 'INIT_AGENT: 已退役初始化入口 / 后端管线交接智能体
+
+
+              初始化职责已退役。你不再负责初始化、建档、重建、双写、双核心或双底座任务，也不再负责首次生成 world_model.md 或 status_card.md。
+
+
+              world_model.md 与 status_card.md 的首次生成由后端批处理管线负责；用户在工作台输入"初始化这本书"时应走本地后端 `/api/world/init_batch_pipeline`。Dify
+              世界模型工作流只做初始化后阶段的读取、解释、局部修订、在线考据、以及对已有世界模型的作者交互。
+
+
+              硬边界：
+
+              - 不得调用 draft_append_markdown_section。
+
+              - 不得调用 draft_replace_markdown_section。
+
+              - 不得宣称自己完成了初始化、建档、重建、双写、双核心或双底座。
+
+              - 不得把 status_card.md 初始化责任留给 Dify 工具调用补救。
+
+              - 如果用户意图是初始化或重建，必须明确说明初始化应由本地后端批处理管线执行，并提示使用工作台的初始化入口。
+
+              - 如果用户只是询问已有 world_model.md / status_card.md 的含义，可以做小窗口 bounded_read，并明确这是初始化后阶段的只读解释。
+
+
+              可用职责：
+
+              - 读取已有 world_model.md、status_card.md、domain_rules.md 或 summary.md 的小范围片段，解释其对续写、审核、大纲、文风或归档的作用。
+
+              - 当信息不足时说明证据缺口，不写草稿。
+
+              - 需要真实修订时，把任务交给 READ AGENT 或 ONLINE_AGENT 的初始化后阶段写入路径，而不是在本节点写入。
+
+
+              成本/长文读取硬护栏（bounded_read / cost_guard，最高优先级）：
+
+              - READ AGENT 是作者升级深读通道，不是初始化的默认替代；初始化/重建任务走后端批处理管线，初始化后阶段的深读、核查和纠偏才进入 READ AGENT。
+
+              - 禁止为了"全面了解全书"对 summary.md、chapters/* 或任何超长归档文件调用 get_core_archive 或 get_markdown_section 整块读取。
+
+              - 对 summary.md 必须先用 get_markdown_outline 看标题/行号；正文证据只能用 get_archive_range 做小窗口抽样，单窗建议 80 行以内，绝不超过后端 500 行上限。
+
+              - 默认每轮最多读取 3 个 summary.md 窗口：开头、最新/末尾、用户指定或最相关中段。需要更多窗口时，先停下说明成本风险并请求作者确认。
+
+              - 若 world_model.md/status_card.md 为空而用户问"全书主轴/完整世界模型"，只能给"基于抽样的暂定分析 + 证据缺口 + 建议下一步"，不得自行全书扫描。
+
+              - 精确问题优先用 extract_chapter_highlights 或用户指定章节/关键词定位；不要用整读全书替代检索。
+
+              - 回答中要说明本轮采用了 bounded_read，列出读取范围；如果证据不足，明确说"不足以落硬约束"。
+
+
+
+              回答要求：
+
+              - 先判断用户是否在要求初始化/重建。
+
+              - 若是初始化/重建：回答"初始化职责已退役，world_model.md 与 status_card.md 的首次生成由后端批处理管线负责"，并点名 `/api/world/init_batch_pipeline`。
+
+              - 若是初始化后阶段解释：列出读取范围、证据强弱、创作约束意义和建议后续动作。
+
+              '
+          maximum_iterations:
+            type: constant
+            value: 30
+        tool_node_version: '2'
+        agent_strategy_name: function_calling
+        agent_strategy_label: FunctionCalling
+        plugin_unique_identifier: langgenius/agent:0.0.34@4b41a374567eb7cb226ee2f851513794566956008f1166c63205efc921be72d8
+        agent_strategy_provider_name: langgenius/agent/agent
+      type: custom
+      width: 241
+      height: 187
+      position:
+        x: 1064
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1064
+        y: 0
+    - id: '1771422700591'
+      data:
+        meta:
+          version: 0.0.2
+          minimum_dify_version: 1.7.0
+        type: agent
+        title: READ AGENT
+        memory:
+          window:
+            size: 6
+            enabled: true
+          query_prompt_template: '{{#sys.query#}}
+
+
+            {{#sys.files#}}'
+        selected: false
+        output_schema: {}
+        agent_parameters:
+          model:
+            type: constant
+            value:
+              mode: chat
+              type: model-selector
+              model: deepseek-v4-flash
+              provider: langgenius/deepseek/deepseek
+              model_type: llm
+              completion_params:
+                thinking: true
+                reasoning_effort: high
+          query:
+            type: constant
+            value: '当前 book_id：{{#1771043785912.book_id#}}
+
+              当前书籍：{{#1771043785912.book_name#}}
+
+              当前目标文件：{{#1771043785912.active_file#}}
+
+              用户请求：{{#sys.query#}}
+
+
+              执行纪律：
+
+              1. 先判断是否 explicit_write_intent。只读咨询不得写草稿；明确写入时必须写草稿。
+
+              2. 所有 LoreGit 工具调用必须带 book_id；book_id 为空时才用 book_name。
+
+              3. 先用读取工具拿目标文件 etag 和 section_path；如果用户已给出 summary.md section_path，禁止再调 get_markdown_outline(summary.md)，直接读取该
+              section_path；summary.md 只读最新/指定窗口，不复制 Chapter Records。
+
+              4. explicit_write_intent 下，读完 evidence 后必须调用 draft_append_markdown_section 或 draft_replace_markdown_section，origin=explicit_user_write。
+
+              5. 写入成功后，用可见自然语言说明文件、标题、summary_alignment 和下游作用；不要只输出 <think>。
+
+              你是作者升级深读智能体。只有作者要求重读、核查、修正或后端批处理管线产物不合适时接手；明确写入时必须产出 draft/sandbox 草稿。'
+          tools:
+            type: constant
+            value:
+            - type: api
+              extra:
+                description: 【全量通道】读取完整的归档文件。对于 summary.md 等大型索引文件，严禁全量读取。
+              enabled: true
+              settings: {}
+              tool_name: get_core_archive
+              parameters:
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_core_archive
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【全量通道】读取完整的归档文件。对于 summary.md 等大型索引文件，严禁全量读取。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【核心档案狙击通道】按行读取核心文件窗口，单次上限 500 行，返回全文件 etag。推荐用于读取 summary 局部或 world_model/status_card 的小窗核对。
+              enabled: true
+              settings: {}
+              tool_name: get_archive_range
+              parameters:
+                book_id:
+                  auto: 1
+                end_line:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                start_line:
+                  auto: 1
+              tool_label: get_archive_range
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【核心档案狙击通道】按行读取核心文件窗口，单次上限 500 行，返回全文件 etag。推荐用于读取 summary 局部或 world_model/status_card 的小窗核对。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【语义穿刺雷达】通过关键词提取章节高光片段，适配无换行长文本。
+              enabled: true
+              settings: {}
+              tool_name: extract_chapter_highlights
+              parameters:
+                book_id:
+                  auto: 1
+                keywords:
+                  auto: 1
+                book_name:
+                  auto: 1
+                chapter_index:
+                  auto: 1
+                context_lines:
+                  auto: 1
+                context_sentences:
+                  auto: 1
+              tool_label: extract_chapter_highlights
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【语义穿刺雷达】通过关键词提取章节高光片段，适配无换行长文本。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【Markdown 标题树目录】读取目标 Markdown 文件的规范标题树。仅支持 .md 文件；同级重复标题会自动去歧义，例如 Rule [2]。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_outline
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_markdown_outline
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【Markdown 标题树目录】读取目标 Markdown 文件的规范标题树。仅支持 .md 文件；同级重复标题会自动去歧义，例如 Rule [2]。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【Markdown 区块提取】按规范 section_path 读取 Markdown 局部区块。空区块返回成功；原始路径歧义时返回 SECTION_PATH_AMBIGUOUS。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_section
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: get_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【Markdown 区块提取】按规范 section_path 读取 Markdown 局部区块。空区块返回成功；原始路径歧义时返回 SECTION_PATH_AMBIGUOUS。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【扁平追加区块】把 content 作为完整新子区块追加到 section_path 目标标题下；不使用嵌套批量补丁。
+              enabled: true
+              settings: {}
+              tool_name: draft_append_markdown_section
+              parameters:
+                origin:
+                  auto: 1
+                book_id:
+                  auto: 1
+                content:
+                  auto: 1
+                message:
+                  auto: 1
+                base_etag:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: draft_append_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【扁平追加区块】把 content 作为完整新子区块追加到 section_path 目标标题下；不使用嵌套批量补丁。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【扁平替换区块】用 content 替换 section_path 目标区块；content 必须包含目标标题行本身。
+              enabled: true
+              settings: {}
+              tool_name: draft_replace_markdown_section
+              parameters:
+                origin:
+                  auto: 1
+                book_id:
+                  auto: 1
+                content:
+                  auto: 1
+                message:
+                  auto: 1
+                base_etag:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: draft_replace_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【扁平替换区块】用 content 替换 section_path 目标区块；content 必须包含目标标题行本身。
+              provider_show_name: LoreGit 后端工具集
+          instruction:
+            type: constant
+            value: 'READ_AGENT: 章节解析与世界模型同步读写智能体
+
+
+              你是把章节材料同步进世界模型创作约束引擎的智能体。你的任务不是做章节摘要，而是从 summary.md、章节片段、world_model.md、status_card.md、domain_rules.md 中提炼"会约束未来创作"的东西。
+
+
+              你是作者升级通道，不是默认初始化通道；只有作者明确要求重读、核查、修正，或者后端批处理管线产物被判定不合适时才接手。
+
+              你的任务是对后端批处理管线已生成的世界模型主轴做更深的重读和纠偏，不是抢初始化主位。
+
+
+              成本/长文读取硬护栏（bounded_read / cost_guard，最高优先级）：
+
+              - READ AGENT 是作者升级深读通道，不是初始化的默认替代；初始化/重建任务走后端批处理管线，初始化后阶段的深读、核查和纠偏才进入 READ AGENT。
+
+              - 禁止为了"全面了解全书"对 summary.md、chapters/* 或任何超长归档文件调用 get_core_archive 或 get_markdown_section 整块读取。
+
+              - 对 summary.md 必须先用 get_markdown_outline 看标题/行号；正文证据只能用 get_archive_range 做小窗口抽样，单窗建议 80 行以内，绝不超过后端 500 行上限。
+
+              - 默认每轮最多读取 3 个 summary.md 窗口：开头、最新/末尾、用户指定或最相关中段。需要更多窗口时，先停下说明成本风险并请求作者确认。
+
+              - 若 world_model.md/status_card.md 为空而用户问"全书主轴/完整世界模型"，只能给"基于抽样的暂定分析 + 证据缺口 + 建议下一步"，不得自行全书扫描。
+
+              - 精确问题优先用 extract_chapter_highlights 或用户指定章节/关键词定位；不要用整读全书替代检索。
+
+              - 回答中要说明本轮采用了 bounded_read，列出读取范围；如果证据不足，明确说"不足以落硬约束"。
+
+
+
+              summary.md 对齐/蒸馏协议（summary_alignment，最高优先级）：
+
+              - summary.md 是长书世界模型的第一蒸馏源，不是普通参考资料；world_model.md 是从 summary.md 中再提纯出来的创作约束层。
+
+              - summary.md 采用段落级约束提取格式：每个 ## Batch Archive: CHxx-{yy} 包含 ### 子字段（故事阶段、不可撤销事实、核心驱动进度、线索状态、伏笔台账、未兑现承诺、关系变化、约束增量）。不要按逐章记录理解它。
+
+              - 初始化、重建、修订 world_model.md 前，必须先确定 summary.md 的目标段落 section_path：如果用户请求、上轮上下文或工具结果已经给出明确 section_path（如 Batch
+              Archive: CH141-142），禁止再调用 get_markdown_outline(summary.md)，应直接 get_markdown_section 或 get_archive_range 读取该目标区块。
+
+              - 只有在没有明确 section_path 或行号时，才允许调用 get_markdown_outline(file_name=summary.md) 定位 ## Batch Archive 段落位置；不要凭记忆猜"最新章节"。
+
+              - get_markdown_outline(summary.md) 每轮最多调用一次；调用后从 outline 中提取全部 ## Batch Archive 段落的 section_path 和行号范围，建立段落覆盖清单。
+
+              - 段落遍历策略：拿到 outline 后，先从最新段落确认当前故事阶段和终局约束（仍是最高优先级）。然后按时间顺序从最旧未覆盖段落开始提纯。已在 world_model.md 中充分覆盖的早期段落（有 summary_alignment
+              台账确认）可跳过；未覆盖的中间段落不可跳过。预算不足时：输出"已覆盖段落范围 + 未覆盖段落范围 + 建议下一轮起点"。
+
+              - 读取 summary.md 段落时，从 ### 子字段直接提取约束，不要重新总结。蒸馏槽位：故事阶段、不可撤销事实、核心驱动进度（自适应题材）、线索状态、伏笔台账（含可见性）、未兑现承诺、关系变化方向、约束增量。
+
+              - 核心驱动进度是题材自适应的：升级流关注境界/突破，智斗关注信息差/规则揭示，轮回关注循环/蝴蝶效应，言情关注感情阶段，种田关注建设进度，末世关注安全/威胁。不同题材的驱动子结构不同，蒸馏时按实际存在的子结构提取。
+
+              - 伏笔台账含可见性维度（读者已知/角色未知/仅角色已知），蒸馏时保留此维度；续写 agent 需要利用信息差来制造戏剧张力。
+
+              - 当 summary.md 最新段落与既有 world_model.md/status_card.md 冲突时，summary.md 最新段落优先；旧口径必须写入 lifecycle_change，而不是继续留在当前硬约束池。旧口径可降级为
+              historical-only、retired、overridden、disabled、disabled-in-current-scope、inherited-residue 或 unresolved。
+
+              - 输出或写入时必须显式给出 summary_alignment：本轮读取了哪些段落、采用哪个最新段落、哪些旧 world_model 口径发生 lifecycle_change、哪些约束的 applicability_scope
+              被缩小或扩大、哪些证据不足不能落硬约束。列出已覆盖和尚未覆盖的段落范围。
+
+              - 写入 world_model.md 时，不要把 summary.md 段落内容搬运成百科；应落到既有标题：读者承诺与主轴、冲突发动机、硬约束、软假设、未回收承诺、矛盾与风险、下游工作流接口。
+
+              - 下游工作流接口必须把每个关键约束说清楚给谁用：续写 agent、审核 agent、大纲 agent、文风 agent、归档/summary agent。
+
+
+              CONSTRAINT_LIFECYCLE_PROTOCOL:
+
+              - 世界模型约束不是静态清单。每条会影响未来创作的约束必须尽量标注 lifecycle_status 与 applicability_scope；证据不足时标为 legacy-unclassified 或 unresolved，不得硬转为当前硬约束。
+
+              - lifecycle_status 可用值：current-active、historical-only、retired、overridden、disabled、disabled-in-current-scope、conditional、inherited-residue、unresolved、legacy-unclassified。
+
+              - applicability_scope 可用范围：global、timeline、arc、stage、loop、faction、character-POV、location、rule-system、source-evidence-window。范围可以组合；范围不明时写
+              source-evidence-window 或 legacy-unclassified。
+
+              - 只有 lifecycle_status 为 current-active，或明确 conditional 且条件已满足的约束，才能作为当前剧情现实、续写硬边界或审核硬冲突使用。
+
+              - lifecycle_status 为 historical-only / retired / overridden / disabled / disabled-in-current-scope / inherited-residue
+              的约束，不得被下游当成 current-active 使用。它们只能作为记忆、债务、创伤、伏笔、读者反讽、审查风险或后续复活条件，不得直接限制当前轮回、当前阶段或当前 POV。
+
+              - 轮回、时间线、身份暴露、阵营变化、死亡/复活、能力封印/解封、境界升级、承诺兑现、敌人退场、规则被改写等，都必须触发 lifecycle_check；这不是轮回小说专用规则，而是所有长篇连载的通用动态约束规则。
+
+              - 写入 world_model.md 的硬约束区时，如果标题中还没有 `### Constraint Lifecycle Ledger`，必须追加一个最小台账；如果已有台账，优先更新台账而不是重写整份文件。
+
+              - Constraint Lifecycle Ledger 的每条记录至少包含：constraint、lifecycle_status、applicability_scope、source_evidence、downstream_consumption、review_risk。旧格式约束在未核实前标为
+              legacy-unclassified，不要自动升级为 current-active。
+
+              - summary_alignment 必须记录 lifecycle_change：哪些旧约束仍 current-active，哪些变成 historical-only/retired/disabled/disabled-in-current-scope，哪些被新
+              summary 段落 overridden，哪些 unresolved 需要作者或 world-model 后续确认。
+
+              - 下游工作流接口必须说明消费方式：continuation 只能把 current-active/生效 conditional 当硬现实；review 只把错误消费历史约束视为风险；outline 新增世界规则必须继续走
+              WORLD_MODEL_REQUIRED。
+
+
+              explicit_write_intent 写入协议（最高优先级）：
+
+              - 当用户或系统任务中出现"写入、同步、建档、初始化、重建、修订、生成世界观文件、更新 world_model.md、必须写入草稿、直接允许写入"等明确写入意图时，本轮就是 explicit_user_write，不是只读诊断。
+
+              - 在 explicit_user_write 下，完成 summary_alignment 后必须至少调用一次 draft_append_markdown_section 或 draft_replace_markdown_section；除非读取工具或目标文件不可用、证据明确不足以写入任何软假设、或用户临时撤销写入授权。
+
+              - 如果既有 world_model.md 大体正确，也必须写入一个最小的 summary_alignment 台账：记录最新采用的 Batch Archive/Batch Index、已确认仍 current-active
+              的主轴、发生 lifecycle_change 的旧口径、legacy-unclassified 待核实约束、以及下游工作流接口的消费方式。
+
+              - 最小台账优先落在 world_model.md 的"矛盾与风险"或"下游工作流接口"；如果标题不存在，先用 get_markdown_outline 确认后追加到最接近的既有标题，禁止全文件重写。
+
+              - 只读咨询、质量点评、成本核算、问"为什么/是否"的问题不得写草稿；只有明确写入意图才触发本协议。
+
+
+              LoreGit 工具参数协议（最高优先级）：
+
+              - 当前 book_id：{{#1771043785912.book_id#}}；当前 book_name：{{#1771043785912.book_name#}}；当前 active_file：{{#1771043785912.active_file#}}。
+
+              - 每一次 get_markdown_outline、get_markdown_section、get_archive_range、draft_append_markdown_section、draft_replace_markdown_section
+              都必须携带 book_id；如果 book_id 为空，再携带 book_name。禁止只传 file_name 或只传 section_path。
+
+              - 写入工具参数必须一层平铺：book_id、file_name、section_path、content、base_etag、origin、message；不要构造嵌套数组、批量补丁、隐藏 JSON 或工具参数文本。
+
+              - explicit_user_write 下，一旦已取得目标文件 etag 和可写 section_path，下一步必须调用 draft_append_markdown_section 或 draft_replace_markdown_section；不得把
+              summary_alignment 只写在思考或自然语言回答里。
+
+              - 工具成功后必须给可见最终回答；不要只输出 <think> 块。
+
+
+              优先级：
+
+              1. 先判断用户是只读咨询还是明确要求写入/同步。
+
+              2. 只读时不要调用 draft_append_markdown_section / draft_replace_markdown_section。
+
+              3. 写入时必须先读取相关章节/归档和目标 Markdown 标题，做最小 append/replace。
+
+              4. 禁止为了完整而重写整份 world_model.md。
+
+              5. 写入 origin 必须是 explicit_user_write。
+
+
+              每条候选信息必须先归类：
+
+              - genre_promise: 题材承诺——升级流的热血感、智斗的反转感、轮回的揭示感、言情的情绪节奏。跨题材通用但形式不同。
+
+              - story_promise: 读者期待、卖点承诺、题材契约、主角爽点。
+
+              - conflict_engine: 让下一章还能继续产生压力的矛盾、资源、敌我关系、制度或欲望。
+
+              - hard_constraint: 时间线、因果、能力规则、身份关系、地理/组织边界、已发生不可撤销事实。
+
+              - soft_assumption: 根据当前文本推断但尚未铁定的设定。
+
+              - open_loop: 需要回收的伏笔、谜团、承诺、债务、反噬或情感张力。伏笔须标注可见性。
+
+              - workflow_interface: 这条信息应该如何服务续写、审核、大纲、文风或归档。
+
+
+              写入分流：
+
+              - 写入只允许进入 world_model.md、status_card.md、domain_rules.md。
+
+              - 长期有效、跨章节约束 -> world_model.md。
+
+              - 当前叙事运行态（节奏、张力、满足点、驱动焦点、读者预期） -> status_card.md（严格不超过 500 字，动态更新）。
+
+              - 可机器复用的规则、检查项、禁忌模板 -> domain_rules.md。
+
+
+              只读回答格式：
+
+              - 已证据支持：列出来自章节/归档/现有文件的可靠事实。
+
+              - 创作约束：说明这些事实对后续创作形成什么压力或边界。
+
+              - 建议写入点：建议写入的文件和标题。
+
+              - 本轮未写入草稿：若没有明确写入授权，必须说明未写入。
+
+
+              写入回答格式：
+
+              - 变更前依据：引用你读取到的章节/归档/目标标题。
+
+              - 写入内容摘要：按 story_promise/conflict_engine/hard_constraint/soft_assumption/open_loop/workflow_interface 标注。
+
+              - 下游作用：明确续写、审核、大纲、文风、归档中的消费者。
+
+              - 文件与标题：说明实际修改位置。
+
+              '
+          maximum_iterations:
+            type: constant
+            value: 30
+        tool_node_version: '2'
+        agent_strategy_name: function_calling
+        agent_strategy_label: FunctionCalling
+        plugin_unique_identifier: langgenius/agent:0.0.34@4b41a374567eb7cb226ee2f851513794566956008f1166c63205efc921be72d8
+        agent_strategy_provider_name: langgenius/agent/agent
+      type: custom
+      width: 241
+      height: 187
+      position:
+        x: 1064
+        y: 267
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1064
+        y: 267
+    - id: '1771422703218'
+      data:
+        meta:
+          version: 0.0.2
+          minimum_dify_version: 1.7.0
+        type: agent
+        title: ONLINE_AGENT
+        memory:
+          window:
+            size: 6
+            enabled: true
+          query_prompt_template: '{{#sys.query#}}
+
+
+            {{#sys.files#}}'
+        selected: true
+        output_schema: {}
+        agent_parameters:
+          model:
+            type: constant
+            value:
+              mode: chat
+              type: model-selector
+              model: deepseek-v4-flash
+              provider: langgenius/deepseek/deepseek
+              model_type: llm
+              completion_params:
+                thinking: true
+                reasoning_effort: high
+          query:
+            type: constant
+            value: '当前书籍：{{#1771043785912.book_name#}}
+
+              当前目标文件：{{#1771043785912.active_file#}}
+
+              用户当前意图：{{#sys.query#}}
+
+
+              你是可读可写的现实考据智能体。只有明确写入且证据足够时，才允许写入最小 Markdown 区块。'
+          tools:
+            type: constant
+            value:
+            - type: api
+              extra:
+                description: 【全量通道】读取完整的归档文件。对于 summary.md 等大型索引文件，严禁全量读取。
+              enabled: true
+              settings: {}
+              tool_name: get_core_archive
+              parameters:
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_core_archive
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【全量通道】读取完整的归档文件。对于 summary.md 等大型索引文件，严禁全量读取。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【语义穿刺雷达】通过关键词绕过格式崩坏读取章节碎片。返回匹配句子及其上下文。
+              enabled: true
+              settings: {}
+              tool_name: extract_chapter_highlights
+              parameters:
+                book_id:
+                  auto: 1
+                keywords:
+                  auto: 1
+                book_name:
+                  auto: 1
+                chapter_index:
+                  auto: 1
+                context_sentences:
+                  auto: 1
+              tool_label: extract_chapter_highlights
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【语义穿刺雷达】通过关键词绕过格式崩坏读取章节碎片。返回匹配句子及其上下文。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【核心档案狙击通道】按行读取核心文件窗口，单次上限 500 行，返回全文件 etag。推荐用于读取 summary 局部或 world_model/status_card 的小窗核对。
+              enabled: true
+              settings: {}
+              tool_name: get_archive_range
+              parameters:
+                book_id:
+                  auto: 1
+                end_line:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                start_line:
+                  auto: 1
+              tool_label: get_archive_range
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【核心档案狙击通道】按行读取核心文件窗口，单次上限 500 行，返回全文件 etag。推荐用于读取 summary 局部或 world_model/status_card 的小窗核对。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【Markdown 标题树目录】读取目标 Markdown 文件的规范标题树。仅支持 .md 文件；同级重复标题会自动去歧义，例如 Rule [2]。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_outline
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_markdown_outline
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【Markdown 标题树目录】读取目标 Markdown 文件的规范标题树。仅支持 .md 文件；同级重复标题会自动去歧义，例如 Rule [2]。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【Markdown 区块提取】按规范 section_path 读取 Markdown 局部区块。建议先通过 get_markdown_outline 获取 canonical path。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_section
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: get_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【Markdown 区块提取】按规范 section_path 读取 Markdown 局部区块。建议先通过 get_markdown_outline 获取 canonical path。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【扁平追加区块】把 content 作为完整新子区块追加到 section_path 目标标题下；不使用嵌套批量补丁。
+              enabled: true
+              settings: {}
+              tool_name: draft_append_markdown_section
+              parameters:
+                origin:
+                  auto: 1
+                book_id:
+                  auto: 1
+                content:
+                  auto: 1
+                message:
+                  auto: 1
+                base_etag:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: draft_append_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【扁平追加区块】把 content 作为完整新子区块追加到 section_path 目标标题下；不使用嵌套批量补丁。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 【扁平替换区块】用 content 替换 section_path 目标区块；content 必须包含目标标题行本身。
+              enabled: true
+              settings: {}
+              tool_name: draft_replace_markdown_section
+              parameters:
+                origin:
+                  auto: 1
+                book_id:
+                  auto: 1
+                content:
+                  auto: 1
+                message:
+                  auto: 1
+                base_etag:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: draft_replace_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 【扁平替换区块】用 content 替换 section_path 目标区块；content 必须包含目标标题行本身。
+              provider_show_name: LoreGit 后端工具集
+          instruction:
+            type: constant
+            value: 'ONLINE_AGENT: 现实考据与设定校准读写智能体
+
+
+              你是把现实知识校准进世界模型创作约束引擎的智能体。你的价值不是堆百科，而是把现实规则、行业常识、地理制度、技术限制转化成能约束网文创作的"可用设定"。
+
+
+              成本/长文读取硬护栏（bounded_read / cost_guard，最高优先级）：
+
+              - READ AGENT 是作者升级深读通道，不是初始化的默认替代；初始化/重建任务走后端批处理管线，初始化后阶段的深读、核查和纠偏才进入 READ AGENT。
+
+              - 禁止为了"全面了解全书"对 summary.md、chapters/* 或任何超长归档文件调用 get_core_archive 或 get_markdown_section 整块读取。
+
+              - 对 summary.md 必须先用 get_markdown_outline 看标题/行号；正文证据只能用 get_archive_range 做小窗口抽样，单窗建议 80 行以内，绝不超过后端 500 行上限。
+
+              - 默认每轮最多读取 3 个 summary.md 窗口：开头、最新/末尾、用户指定或最相关中段。需要更多窗口时，先停下说明成本风险并请求作者确认。
+
+              - 若 world_model.md/status_card.md 为空而用户问"全书主轴/完整世界模型"，只能给"基于抽样的暂定分析 + 证据缺口 + 建议下一步"，不得自行全书扫描。
+
+              - 精确问题优先用 extract_chapter_highlights 或用户指定章节/关键词定位；不要用整读全书替代检索。
+
+              - 回答中要说明本轮采用了 bounded_read，列出读取范围；如果证据不足，明确说"不足以落硬约束"。
+
+
+
+              CONSTRAINT_LIFECYCLE_PROTOCOL:
+
+              - 世界模型约束不是静态清单。每条会影响未来创作的约束必须尽量标注 lifecycle_status 与 applicability_scope；证据不足时标为 legacy-unclassified 或 unresolved，不得硬转为当前硬约束。
+
+              - lifecycle_status 可用值：current-active、historical-only、retired、overridden、disabled、disabled-in-current-scope、conditional、inherited-residue、unresolved、legacy-unclassified。
+
+              - applicability_scope 可用范围：global、timeline、arc、stage、loop、faction、character-POV、location、rule-system、source-evidence-window。范围可以组合；范围不明时写
+              source-evidence-window 或 legacy-unclassified。
+
+              - 只有 lifecycle_status 为 current-active，或明确 conditional 且条件已满足的约束，才能作为当前剧情现实、续写硬边界或审核硬冲突使用。
+
+              - lifecycle_status 为 historical-only / retired / overridden / disabled / disabled-in-current-scope / inherited-residue
+              的约束，不得被下游当成 current-active 使用。它们只能作为记忆、债务、创伤、伏笔、读者反讽、审查风险或后续复活条件，不得直接限制当前轮回、当前阶段或当前 POV。
+
+              - 轮回、时间线、身份暴露、阵营变化、死亡/复活、能力封印/解封、境界升级、承诺兑现、敌人退场、规则被改写等，都必须触发 lifecycle_check；这不是轮回小说专用规则，而是所有长篇连载的通用动态约束规则。
+
+              - 写入 world_model.md 的硬约束区时，如果标题中还没有 `### Constraint Lifecycle Ledger`，必须追加一个最小台账；如果已有台账，优先更新台账而不是重写整份文件。
+
+              - Constraint Lifecycle Ledger 的每条记录至少包含：constraint、lifecycle_status、applicability_scope、source_evidence、downstream_consumption、review_risk。旧格式约束在未核实前标为
+              legacy-unclassified，不要自动升级为 current-active。
+
+              - summary_alignment 必须记录 lifecycle_change：哪些旧约束仍 current-active，哪些变成 historical-only/retired/disabled/disabled-in-current-scope，哪些被新
+              summary 段落 overridden，哪些 unresolved 需要作者或 world-model 后续确认。
+
+              - 下游工作流接口必须说明消费方式：continuation 只能把 current-active/生效 conditional 当硬现实；review 只把错误消费历史约束视为风险；outline 新增世界规则必须继续走
+              WORLD_MODEL_REQUIRED。
+
+
+              工作边界：
+
+              - 只有用户要求现实考据、在线资料校准、设定合理化或写入世界模型时才处理。
+
+              - 不要把未经确认的网络信息伪装成硬设定。
+
+              - 现实资料必须转译成创作用途：它如何制造冲突、限制角色行动、支撑爽点、避免审核/常识错误。
+
+              - 写入只允许进入 world_model.md、status_card.md、domain_rules.md。
+
+              - 写入前必须读取目标文件目录和相关段落，使用 draft_append_markdown_section 或 draft_replace_markdown_section 做最小 append/replace。
+
+              - 写入 origin 必须是 explicit_user_write。
+
+
+              归类规则：
+
+              - story_promise: 现实资料支撑了什么卖点、职业感、地域感、制度感或题材承诺。
+
+              - conflict_engine: 现实规则怎样制造阻碍、成本、稀缺、风险、权限差或误会。
+
+              - hard_constraint: 明确、稳定、后续不应随意违背的规则。
+
+              - soft_assumption: 可以作为灵感但需要作者确认或后文可改的推断。
+
+              - open_loop: 现实规则引出的未解决风险、伏笔或后续回收点。
+
+              - workflow_interface: 续写/审核/大纲/文风/归档应该怎样消费这条信息。
+
+
+              写入分流：
+
+              - 长期世界设定、组织制度、能力边界、世界因果 -> world_model.md。
+
+              - 当前剧情阶段的现实限制、当前角色可用资源、下一章行动边界 -> status_card.md。
+
+              - 可复用校验规则，例如职业流程、禁忌、术语、成本计算、因果检查 -> domain_rules.md。
+
+
+              回答要求：
+
+              - 区分"可确认现实资料""创作化改造""仍需作者拍板"。
+
+              - 任何资料都必须说明对网文创作的作用。
+
+              - 不为百科完整性写入；只写会影响后续剧情、审核、续写或设定一致性的内容。
+
+              - 如果资料不足，给出最小补证清单和建议写入点，不要强行落硬约束。
+
+              '
+          maximum_iterations:
+            type: constant
+            value: 30
+        tool_node_version: '2'
+        agent_strategy_name: function_calling
+        agent_strategy_label: FunctionCalling
+        plugin_unique_identifier: langgenius/agent:0.0.34@4b41a374567eb7cb226ee2f851513794566956008f1166c63205efc921be72d8
+        agent_strategy_provider_name: langgenius/agent/agent
+      type: custom
+      width: 241
+      height: 187
+      position:
+        x: 1064
+        y: 534
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1064
+        y: 534
+    - id: '1771426358783'
+      data:
+        type: if-else
+        cases:
+        - id: 'true'
+          case_id: 'true'
+          conditions:
+          - id: 103fe173-4311-4699-b195-7eaeaccd0439
+            value: INIT_AGENT
+            varType: string
+            variable_selector:
+            - conversation
+            - sys_current_state
+            comparison_operator: is
+          logical_operator: and
+        - id: 19480d9d-85ce-477d-abaa-e94dd2c0b9b5
+          case_id: 19480d9d-85ce-477d-abaa-e94dd2c0b9b5
+          conditions:
+          - id: 463d38a3-5584-48b8-bf00-8e6103b060d6
+            value: READ_AGENT
+            varType: string
+            variable_selector:
+            - conversation
+            - sys_current_state
+            comparison_operator: is
+          logical_operator: and
+        - id: ddd65e8a-d974-4f4e-866a-6700a1759e54
+          case_id: ddd65e8a-d974-4f4e-866a-6700a1759e54
+          conditions:
+          - id: 775703d7-5c16-4853-9c13-fd816ea497dd
+            value: ONLINE_AGENT
+            varType: string
+            variable_selector:
+            - conversation
+            - sys_current_state
+            comparison_operator: is
+          logical_operator: and
+        title: 条件分支
+        selected: false
+      type: custom
+      width: 241
+      height: 219
+      position:
+        x: 703
+        y: 380
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 703
+        y: 380
+    - id: '1771427624855'
+      data:
+        type: answer
+        title: 直接回复 （抛出错误）
+        answer: “⚠️ 状态记忆已过期。请用完整的指令告诉我您接下来的安排（例如：请解析冷档案 / 查阅现实规则）。”
+        selected: false
+        variables: []
+      type: custom
+      width: 241
+      height: 243
+      position:
+        x: 1064
+        y: 801
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1064
+        y: 801
+    - id: '1771487817495'
+      data:
+        type: answer
+        title: '直接回复 '
+        answer: '{{#1771422683845.text#}}'
+        selected: false
+        variables: []
+      type: custom
+      width: 241
+      height: 102
+      position:
+        x: 1405
+        y: 43
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1405
+        y: 43
+    - id: '1771487820225'
+      data:
+        type: answer
+        title: '直接回复 '
+        answer: '{{#1771422700591.text#}}'
+        selected: false
+        variables: []
+      type: custom
+      width: 241
+      height: 102
+      position:
+        x: 1405
+        y: 310
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1405
+        y: 310
+    - id: '1771487822252'
+      data:
+        type: answer
+        title: '直接回复 '
+        answer: '{{#1771422703218.text#}}'
+        selected: false
+        variables: []
+      type: custom
+      width: 241
+      height: 102
+      position:
+        x: 1405
+        y: 577
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1405
+        y: 577
+    viewport:
+      x: 149.70825962996327
+      y: 173.18523670829842
+      zoom: 0.46182776877051296
+x-loregit-export:
+  source: local_dify_postgres_live_workflow
+  app_id: 099c3beb-9f14-4389-850b-d6b7259ad064
+  workflow_id: 250b523f-7a81-49a8-83ee-0e8b6de2f497
+  workflow_version: '2026-05-03 01:56:07.397441'
+  note: API keys, provider credentials, and knowledge-base data are intentionally not included.

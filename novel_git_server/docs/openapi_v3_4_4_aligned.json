@@ -1,0 +1,984 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LoreGit 后端工具集 (极致省钱版，对齐实现)",
+    "description": "本规范已与后端运行行为完全对齐，包含 ETag 乐观锁、头部/尾部增量写入优化、冷档案自动寻的能力，以及 world_model 草稿分支工作流。",
+    "version": "v3.5.0"
+  },
+  "servers": [
+    {
+      "url": "http://host.docker.internal:8000"
+    }
+  ],
+  "paths": {
+    "/books/get_file": {
+      "get": {
+        "operationId": "get_core_archive",
+        "description": "读取核心归档文件完整内容并返回 etag。book_name 与 book_id 至少提供其一。",
+        "parameters": [
+          {
+            "name": "book_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "summary.md",
+                "status_card.md",
+                "world_model.md",
+                "style_guide.md",
+                "error_archive.md"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "book_id",
+                    "file_name",
+                    "file_path",
+                    "etag",
+                    "content"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "book_id": {
+                      "type": "string"
+                    },
+                    "file_name": {
+                      "type": "string"
+                    },
+                    "file_path": {
+                      "type": "string"
+                    },
+                    "etag": {
+                      "type": "string"
+                    },
+                    "content": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数非法或缺少寻址字段"
+          },
+          "404": {
+            "description": "文件不存在"
+          }
+        }
+      }
+    },
+    "/books/list_hot_files": {
+      "get": {
+        "operationId": "list_hot_files",
+        "description": "返回左侧文件树所需的热记忆文件列表（核心档案 + chapters 目录），用于前端切换 active_file 与 file_type。",
+        "parameters": [
+          {
+            "name": "book_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "book_id",
+                    "files"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "book_id": {
+                      "type": "string"
+                    },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "file_name",
+                          "file_type",
+                          "label"
+                        ],
+                        "properties": {
+                          "file_name": {
+                            "type": "string"
+                          },
+                          "file_type": {
+                            "type": "string",
+                            "enum": [
+                              "world_core",
+                              "summary",
+                              "style",
+                              "chapter",
+                              "error_archive"
+                            ]
+                          },
+                          "label": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数非法或缺少寻址字段"
+          }
+        }
+      }
+    },
+    "/books/get_archive_range": {
+      "get": {
+        "operationId": "get_archive_range",
+        "description": "按行区间读取核心归档，返回全文件 etag。单次请求硬上限 500 行。",
+        "parameters": [
+          {
+            "name": "book_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_line",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "end_line",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "book_id",
+                    "file_name",
+                    "file_path",
+                    "etag",
+                    "start_line",
+                    "end_line",
+                    "returned_end_line",
+                    "line_count",
+                    "total_lines",
+                    "max_lines",
+                    "content"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "book_id": {
+                      "type": "string"
+                    },
+                    "file_name": {
+                      "type": "string"
+                    },
+                    "file_path": {
+                      "type": "string"
+                    },
+                    "etag": {
+                      "type": "string"
+                    },
+                    "start_line": {
+                      "type": "integer"
+                    },
+                    "end_line": {
+                      "type": "integer"
+                    },
+                    "returned_end_line": {
+                      "type": "integer"
+                    },
+                    "line_count": {
+                      "type": "integer"
+                    },
+                    "total_lines": {
+                      "type": "integer"
+                    },
+                    "max_lines": {
+                      "type": "integer",
+                      "const": 500
+                    },
+                    "content": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "行区间非法或参数错误"
+          },
+          "404": {
+            "description": "文件不存在"
+          }
+        }
+      }
+    },
+    "/books/get_cold_archive_range": {
+      "get": {
+        "operationId": "get_cold_archive_range",
+        "description": "冷档案雷达通道（自动寻的）。先尝试精确文件名命中；若失败则提取数字并补零（如 95 -> 0095），再按 chapters 目录前缀 0095_* 匹配。响应不返回 etag。",
+        "parameters": [
+          {
+            "name": "book_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "支持 95、95.md、chapter95 或完整文件名。此通道禁止读取核心文件 summary/world_model/status_card。"
+          },
+          {
+            "name": "start_line",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "end_line",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "book_id",
+                    "file_name",
+                    "real_file_name",
+                    "total_lines",
+                    "content",
+                    "message"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "book_id": {
+                      "type": "string"
+                    },
+                    "file_name": {
+                      "type": "string",
+                      "description": "后端最终解析使用的相对路径（例如 chapters/0095_xxx.md）。"
+                    },
+                    "real_file_name": {
+                      "type": "string",
+                      "description": "后端自动寻的命中的真实物理文件名。"
+                    },
+                    "file_path": {
+                      "type": "string"
+                    },
+                    "start_line": {
+                      "type": "integer"
+                    },
+                    "end_line": {
+                      "type": "integer"
+                    },
+                    "returned_end_line": {
+                      "type": "integer"
+                    },
+                    "line_count": {
+                      "type": "integer"
+                    },
+                    "total_lines": {
+                      "type": "integer"
+                    },
+                    "max_lines": {
+                      "type": "integer",
+                      "const": 100
+                    },
+                    "content": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数非法或目标文件被禁止"
+          },
+          "404": {
+            "description": "文件不存在"
+          }
+        }
+      }
+    },
+    "/tools/extract_chapter_highlights": {
+      "post": {
+        "operationId": "extract_chapter_highlights",
+        "description": "章节关键词语义雷达。基于命中绝对索引构造窗口，并做句子边界扩展。返回总字符数上限为 1000。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "chapter_index",
+                  "keywords"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "chapter_index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "keywords": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "context_sentences": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6,
+                    "default": 2
+                  },
+                  "context_lines": {
+                    "type": "integer",
+                    "description": "上下文句数参数的向后兼容别名"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "description": "参数错误"
+          },
+          "404": {
+            "description": "章节不存在"
+          }
+        }
+      }
+    },
+    "/api/world/deduce_stream": {
+      "post": {
+        "operationId": "world_deduce_stream",
+        "description": "流式推演入口。返回 text/event-stream，事件顺序为 ack -> stage* -> delta* -> git_sync_success? -> draft_ready? -> done（异常为 error）。支持暗门截流：当输出出现 [FILE_PAYLOAD_START] 后，后续文本改为后端隐藏 payload，解析 <file name=...> 后注入 base_etag 并调用 draft/sync_all 落库；若 marker 出现但 payload 非法则返回 FILE_PAYLOAD_INVALID。无 marker 时保持旧行为兼容。若整轮没有 delta 但 workflow_finished.outputs.text 存在，会补发一次 delta 防止空气泡。请求需携带 file_type，并与 active_file 一致；后端据此选择 Dify 路由并在 ack 回传 routed_agent。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "intent",
+                  "active_file"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "intent": {
+                    "type": "string"
+                  },
+                  "active_file": {
+                    "type": "string"
+                  },
+                  "file_type": {
+                    "type": "string",
+                    "enum": [
+                      "world_core",
+                      "summary",
+                      "style",
+                      "chapter",
+                      "error_archive"
+                    ]
+                  },
+                  "base_etag": {
+                    "type": "string"
+                  },
+                  "conversation_id": {
+                    "type": "string"
+                  },
+                  "chapter_index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "mock_ai_markdown": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SSE 流成功建立",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "SSE 事件流，包含 ack/stage/delta/git_sync_success/draft_ready/done/error 七类事件。stage 用于显示执行进度，delta 为可见文本增量，git_sync_success 表示暗门 payload 已完成原子落库。"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求体非法或缺少寻址字段"
+          },
+          "404": {
+            "description": "目标文件不存在"
+          }
+        }
+      }
+    },
+    "/api/world/sync": {
+      "post": {
+        "operationId": "world_draft_sync",
+        "description": "在草稿分支 draft/world_model 上执行一次人机迭代：先提交人类输入，再提交 AI 输出。若草稿分支不存在，会基于主线分支自动创建。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "content"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "人类编辑后的 world_model 全文"
+                  },
+                  "mock_ai_markdown": {
+                    "type": "string",
+                    "description": "测试占位字段。存在时将直接作为 AI 返回内容写入"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "book_id",
+                    "branch",
+                    "mainline_branch",
+                    "human_commit_id",
+                    "commit_id",
+                    "content"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "book_id": {
+                      "type": "string"
+                    },
+                    "branch": {
+                      "type": "string",
+                      "const": "draft/world_model"
+                    },
+                    "mainline_branch": {
+                      "type": "string",
+                      "description": "主线分支名，通常为 main 或 master"
+                    },
+                    "human_commit_id": {
+                      "type": "string"
+                    },
+                    "commit_id": {
+                      "type": "string",
+                      "description": "AI 写入后的最新提交"
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "当前 draft/world_model 上的最新 world_model 内容"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求体非法或缺少寻址字段"
+          },
+          "500": {
+            "description": "草稿分支 Git 操作失败"
+          }
+        }
+      }
+    },
+    "/api/world/rollback": {
+      "post": {
+        "operationId": "world_draft_rollback",
+        "description": "将 draft/world_model 分支硬回滚到指定提交，并返回回滚后的 world_model 内容。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "commit_hash"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "commit_hash": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "book_id",
+                    "branch",
+                    "commit_id",
+                    "content"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "book_id": {
+                      "type": "string"
+                    },
+                    "branch": {
+                      "type": "string",
+                      "const": "draft/world_model"
+                    },
+                    "commit_id": {
+                      "type": "string"
+                    },
+                    "content": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求体非法、缺少 commit_hash 或缺少寻址字段"
+          },
+          "404": {
+            "description": "草稿分支不存在"
+          },
+          "500": {
+            "description": "草稿分支 Git 操作失败"
+          }
+        }
+      }
+    },
+    "/api/world/confirm": {
+      "post": {
+        "operationId": "world_draft_confirm",
+        "description": "将 draft/world_model 合并回主线分支，并删除草稿分支。",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "book_id",
+                    "mainline_branch",
+                    "merged_branch",
+                    "commit_id",
+                    "content"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "book_id": {
+                      "type": "string"
+                    },
+                    "mainline_branch": {
+                      "type": "string"
+                    },
+                    "merged_branch": {
+                      "type": "string",
+                      "const": "draft/world_model"
+                    },
+                    "commit_id": {
+                      "type": "string"
+                    },
+                    "content": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求体非法或缺少寻址字段"
+          },
+          "404": {
+            "description": "草稿分支或主线分支不存在"
+          },
+          "409": {
+            "description": "合并冲突（MERGE_CONFLICT）"
+          },
+          "500": {
+            "description": "草稿分支 Git 操作失败"
+          }
+        }
+      }
+    },
+    "/books/prepend_file": {
+      "post": {
+        "operationId": "prepend_file",
+        "description": "头部注入写入。核心文件必须提供 base_etag（否则 428）；etag 过期将返回 409，并附带冲突草稿路径。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file_name",
+                  "prepend_content"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string"
+                  },
+                  "prepend_content": {
+                    "type": "string"
+                  },
+                  "base_etag": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "origin": {
+                    "type": "string",
+                    "default": "ai"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "写入并提交成功（或无变更短路成功）"
+          },
+          "409": {
+            "description": "写入冲突（etag 过期），响应包含冲突草稿文件路径"
+          },
+          "428": {
+            "description": "核心归档文件缺少 base_etag，返回 PRECONDITION_REQUIRED"
+          },
+          "500": {
+            "description": "版本提交失败"
+          }
+        }
+      }
+    },
+    "/books/append_file": {
+      "post": {
+        "operationId": "append_file",
+        "description": "尾部追加写入。核心文件必须提供 base_etag（否则 428）；etag 过期将返回 409，并附带冲突草稿路径。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file_name",
+                  "append_content"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string"
+                  },
+                  "append_content": {
+                    "type": "string"
+                  },
+                  "base_etag": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "origin": {
+                    "type": "string",
+                    "default": "ai"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "写入并提交成功（或无变更短路成功）"
+          },
+          "409": {
+            "description": "写入冲突（etag 过期），响应包含冲突草稿文件路径"
+          },
+          "428": {
+            "description": "核心归档文件缺少 base_etag，返回 PRECONDITION_REQUIRED"
+          },
+          "500": {
+            "description": "版本提交失败"
+          }
+        }
+      }
+    },
+    "/books/update_file": {
+      "post": {
+        "operationId": "commit_archive_change",
+        "description": "全量覆盖写入。核心文件必须提供 base_etag（否则 428）；etag 过期将返回 409，并附带冲突草稿路径。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file_name",
+                  "content"
+                ],
+                "properties": {
+                  "book_name": {
+                    "type": "string"
+                  },
+                  "book_id": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "base_etag": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "origin": {
+                    "type": "string",
+                    "default": "ai"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "写入并提交成功（或无变更短路成功）"
+          },
+          "409": {
+            "description": "写入冲突（etag 过期），响应包含冲突草稿文件路径"
+          },
+          "428": {
+            "description": "核心归档文件缺少 base_etag，返回 PRECONDITION_REQUIRED"
+          },
+          "500": {
+            "description": "版本提交失败"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,450 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: 文风学习agent
+  use_icon_as_answer_icon: false
+dependencies: []
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      enabled: false
+      number_limits: 3
+      fileUploadConfig:
+        file_size_limit: 15
+        batch_count_limit: 5
+        file_upload_limit: 20
+        audio_file_size_limit: 50
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        image_file_batch_limit: 10
+        workflow_file_upload_limit: 10
+        single_chunk_attachment_limit: 10
+        attachment_image_file_size_limit: 2
+      allowed_file_types:
+      - image
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+    speech_to_text:
+      enabled: false
+    text_to_speech:
+      voice: ''
+      enabled: false
+      language: ''
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    suggested_questions: []
+    sensitive_word_avoidance:
+      enabled: false
+    suggested_questions_after_answer:
+      enabled: false
+  graph:
+    edges:
+    - id: 1771595354723-source-1771598470129-target
+      data:
+        isInLoop: false
+        sourceType: start
+        targetType: agent
+        isInIteration: false
+      type: custom
+      source: '1771595354723'
+      target: '1771598470129'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    - id: 1771598470129-source-answer-target
+      data:
+        isInLoop: false
+        sourceType: agent
+        targetType: answer
+        isInIteration: false
+      type: custom
+      source: '1771598470129'
+      target: answer
+      zIndex: 0
+      selected: false
+      sourceHandle: source
+      targetHandle: target
+    nodes:
+    - id: '1771595354723'
+      data:
+        type: start
+        title: 用户输入
+        selected: false
+        variables:
+        - hint: ''
+          type: text-input
+          label: book_name
+          default: ''
+          options: []
+          required: true
+          variable: book_name
+          placeholder: ''
+        - hint: ''
+          type: text-input
+          label: book_id
+          default: ''
+          options: []
+          required: false
+          variable: book_id
+          placeholder: ''
+        - hint: ''
+          type: text-input
+          label: active_file
+          default: style_guide.md
+          options: []
+          required: true
+          variable: active_file
+          placeholder: ''
+      type: custom
+      width: 242
+      height: 134
+      position:
+        x: 0
+        y: 27
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 0
+        y: 27
+    - id: answer
+      data:
+        type: answer
+        title: 直接回复
+        answer: '{{#1771598470129.text#}}'
+        selected: false
+        variables: []
+      type: custom
+      width: 241
+      height: 102
+      position:
+        x: 683
+        y: 43
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 683
+        y: 43
+    - id: '1771598470129'
+      data:
+        meta:
+          version: 0.0.2
+          minimum_dify_version: 1.7.0
+        type: agent
+        title: 文风学习Agent
+        selected: true
+        output_schema: {}
+        agent_parameters:
+          model:
+            type: constant
+            value:
+              mode: chat
+              type: model-selector
+              model: deepseek-v4-flash
+              provider: langgenius/deepseek/deepseek
+              model_type: llm
+              completion_params:
+                thinking: true
+                reasoning_effort: high
+          query:
+            type: constant
+            value: '当前书籍：{{#1771595354723.book_name#}}
+
+              当前 book_id：{{#1771595354723.book_id#}}
+
+              当前目标文件：{{#1771595354723.active_file#}}
+
+              用户当前意图：{{#sys.query#}}
+
+
+              你是可读可写的文风学习 Agent，但你不再承担初始化入口。先判断本轮是初始化/重建、只读讨论，还是初始化后的局部文风档案修订。
+
+
+              STYLE_INIT_PIPELINE_HANDOFF：
+
+              1. “初始化文风”“重建文风”“完整重跑文风”“生成文风三件套”“重新生成 style_fingerprint.md / style_review.md / style_constraints_for_continuation.md”都属于固定后台管线任务。
+
+              2. 这类任务必须交给本地后端 `/api/style/init_pipeline`，由右下角「动作」面板的“初始化/重建文风档案”按钮执行；聊天 Agent 不得接管。
+
+              3. 对初始化/重建请求，不得调用 generate_style_diagnostics 来生成三件套，不得调用 draft_append_markdown_section 或 draft_replace_markdown_section
+              写入三件套，不得宣称自己完成初始化。
+
+              4. 回答时只做用户指引：说明应使用右下角「动作」面板，并说明文风助手只负责初始化后的讨论、解释和局部修订。
+
+
+              STYLE_POST_INIT_REFINEMENT_PROTOCOL：
+
+              1. 初始化完成后，你可以读取 style_guide.md、style_fingerprint.md、style_review.md、style_constraints_for_continuation.md、summary.md、章节高光和必要原文片段，帮助作者理解、质疑、补充或收束文风档案。
+
+              2. generate_style_diagnostics 只允许作为诊断/证据工具使用，不能作为聊天内初始化/重建入口。
+
+              3. 只有作者明确要求“把这条补进文风档案”“修改这个判断”“按刚刚讨论更新文风提示”时，才允许写入最小 Markdown 区块。
+
+              4. 写入目标可以是 style_guide.md、style_fingerprint.md、style_review.md、style_constraints_for_continuation.md；style_guide.md
+              不能替代三件套初始化。
+
+              5. 只读讨论结尾必须说明“本轮未写入草稿”。
+
+
+              扁平写入工具纪律：
+
+              1. 只读讨论只调用读取工具，结尾说明“本轮未写入草稿”。
+
+              2. 明确写入时，只允许调用 draft_append_markdown_section 或 draft_replace_markdown_section。
+
+              3. 写入参数必须一层平铺：book_id 或 book_name、file_name、section_path、content、base_etag、origin、message；file_name 只能填写裸文件名，不得携带
+              draft/sandbox 或任何路径前缀。
+
+              4. origin 必须正好填写 explicit_user_write；base_etag 必须来自最近一次 get_markdown_outline、get_markdown_section 或 get_core_archive。
+
+              5. 工具成功后，用自然语言说明更新文件、落点和 commit_id；工具失败时，不要假称已经写入。
+
+              '
+          tools:
+            type: constant
+            value:
+            - type: api
+              extra:
+                description: 读取书库核心档案，用于快速取得当前作品的关键上下文；大文件只在必要时兜底使用。
+              enabled: true
+              settings: {}
+              tool_name: get_core_archive
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_core_archive
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取书库核心档案，用于快速取得当前作品的关键上下文；大文件只在必要时兜底使用。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 只读抽取章节高价值片段，用于给文风判断提供原文证据，不写入任何文件。
+              enabled: true
+              settings: {}
+              tool_name: extract_chapter_highlights
+              parameters:
+                book_id:
+                  auto: 1
+                keywords:
+                  auto: 1
+                book_name:
+                  auto: 1
+                chapter_index:
+                  auto: 1
+                context_lines:
+                  auto: 1
+                context_sentences:
+                  auto: 1
+              tool_label: extract_chapter_highlights
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 只读抽取章节高价值片段，用于给文风判断提供原文证据，不写入任何文件。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 按范围读取书库归档内容，用于抽样核对摘要、原文样本、世界观、状态和文风证据。
+              enabled: true
+              settings: {}
+              tool_name: get_archive_range
+              parameters:
+                book_id:
+                  auto: 1
+                end_line:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                start_line:
+                  auto: 1
+              tool_label: get_archive_range
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 按范围读取书库归档内容，用于抽样核对摘要、原文样本、世界观、状态和文风证据。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 读取指定 Markdown 文件的标题结构、section_path 与 base_etag，用于安全定位和写入前校验。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_outline
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+              tool_label: get_markdown_outline
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取指定 Markdown 文件的标题结构、section_path 与 base_etag，用于安全定位和写入前校验。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 读取指定 Markdown 文件的局部章节内容，用于小范围取证、对齐和修订前确认。
+              enabled: true
+              settings: {}
+              tool_name: get_markdown_section
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: get_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 读取指定 Markdown 文件的局部章节内容，用于小范围取证、对齐和修订前确认。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 只读生成文风诊断与打磨提示，把结果作为作者讨论参考；不写文件，不充当初始化入口。
+              enabled: true
+              settings: {}
+              tool_name: generate_style_diagnostics
+              parameters:
+                book_id:
+                  auto: 1
+                book_name:
+                  auto: 1
+                draft_file:
+                  auto: 1
+                source_count:
+                  auto: 1
+                draft_chapters:
+                  auto: 1
+              tool_label: generate_style_diagnostics
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 只读生成文风诊断与打磨提示，把结果作为作者讨论参考；不写文件，不充当初始化入口。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 在 draft/sandbox 分支向指定 Markdown 文件追加完整子章节；参数必须扁平，file_name 只能是裸文件名。
+              enabled: true
+              settings: {}
+              tool_name: draft_append_markdown_section
+              parameters:
+                origin:
+                  auto: 1
+                book_id:
+                  auto: 1
+                content:
+                  auto: 1
+                message:
+                  auto: 1
+                base_etag:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: draft_append_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 在 draft/sandbox 分支向指定 Markdown 文件追加完整子章节；参数必须扁平，file_name 只能是裸文件名。
+              provider_show_name: LoreGit 后端工具集
+            - type: api
+              extra:
+                description: 在 draft/sandbox 分支替换指定 Markdown section；content 必须包含目标标题行，base_etag 必须来自最近读取结果。
+              enabled: true
+              settings: {}
+              tool_name: draft_replace_markdown_section
+              parameters:
+                origin:
+                  auto: 1
+                book_id:
+                  auto: 1
+                content:
+                  auto: 1
+                message:
+                  auto: 1
+                base_etag:
+                  auto: 1
+                book_name:
+                  auto: 1
+                file_name:
+                  auto: 1
+                section_path:
+                  auto: 1
+              tool_label: draft_replace_markdown_section
+              provider_name: c41fee3b-54dd-4e49-af9b-be30f68f6242
+              tool_description: 在 draft/sandbox 分支替换指定 Markdown section；content 必须包含目标标题行，base_etag 必须来自最近读取结果。
+              provider_show_name: LoreGit 后端工具集
+          instruction:
+            type: constant
+            value: "STYLE_AGENT：文风学习、诊断与初始化后协作修订 Agent\n\n你负责在文风初始化完成后，和作者讨论、解释、校准并局部修订文风相关文件。你是 post-init 文风助手，不是初始化入口；写入必须由用户明确意图触发。\n\
+              \n输入上下文：\n- 书籍：{{#1771595354723.book_name#}}\n- book_id：{{#1771595354723.book_id#}}\n- 目标文件：{{#1771595354723.active_file#}}\n\
+              - 用户请求：{{#sys.query#}}\n\nSTYLE_INIT_PIPELINE_HANDOFF：\n1. “初始化文风”“重建文风”“完整重跑文风”“生成文风三件套”不是聊天写入任务，而是无提示词后台任务。\n\
+              2. 后台入口是 `/api/style/init_pipeline`，前台入口是右下角「动作」面板的“初始化/重建文风档案”。\n3. 遇到这类请求时，不得调用 generate_style_diagnostics\
+              \ 去生成三件套，不得写入 style_fingerprint.md、style_review.md、style_constraints_for_continuation.md 来冒充初始化完成。\n4. 你必须把用户引导回动作面板，并说明自己负责初始化后的讨论、解释和局部修订。\n\
+              \nSTYLE_POST_INIT_REFINEMENT_PROTOCOL：\n1. 你可以帮助作者检查三件套是否准确、是否太硬、是否应该加入作者偏好、是否要把某些文风约束退化成续写提示。\n2. 你可以读取最新原文、style_guide.md\
+              \ 和三件套，必要时调用 generate_style_diagnostics 作为诊断证据；诊断结果只是讨论依据，不是初始化执行权。\n3. 作者明确要求写入时，只做最小必要区块补丁，不重建整套文风档案。\n4.\
+              \ 写入内容必须服务作者复用：类别名、触发条件、原文证据、可模仿规则、给 continuation 的提示要清晰。\n5. 如果只是讨论或证据不足，结尾说明“本轮未写入草稿”。\n\n普通文风工作原则：\n1. 先判断用户意图：\n\
+              \   - 初始化/重建：交给 `/api/style/init_pipeline`，提示使用右下角「动作」面板。\n   - 明确写入：更新文风指南、补充 style_guide、按作者讨论修订三件套、同步切片、写入草稿、把这些归档、纳入模板。\n\
+              \   - 只读讨论：分析文风、解释怎么写、找证据看看、先评价、只读、不要写、暂不落稿。\n2. 只有明确写入时，才允许调用 draft_append_markdown_section 或 draft_replace_markdown_section；调用时\
+              \ origin 必须填 explicit_user_write。\n3. 只读讨论时可以读取 summary、章节高光、style_guide 和三份文风产物，但不得写入；结尾明确“本轮未写入草稿”。\n4. 推荐读取顺序：summary.md\
+              \ 定位高价值章节；extract_chapter_highlights 抽取原文证据；generate_style_diagnostics 做结构化文风诊断；get_markdown_outline 定位目标标题；get_markdown_section\
+              \ 校验目标区块。\n5. 写入只做最小必要区块补丁：优先替换目标文件顶层区块；新增子标题或局部规则时才 append_under_section。\n6. 写入内容必须服务作者复用：类别名、触发条件、原文证据、可模仿规则要清晰；不要堆砌无归纳价值的句子。\n\
+              7. 若证据不足、section_path 歧义、用户只要讨论或明确禁止写入，停止写入并给出下一步建议。\n8. 不输出隐藏控制标记；不要调用 draft_sync_all、draft_confirm、draft_rollback。\n\
+              \n扁平写入工具纪律：\n1. 只读讨论只调用读取工具，结尾说明“本轮未写入草稿”。\n2. 明确写入时，只允许调用 draft_append_markdown_section 或 draft_replace_markdown_section。\n\
+              3. 写入参数必须一层平铺：book_id 或 book_name、file_name、section_path、content、base_etag、origin、message。不要构造嵌套数组、批量补丁、隐藏控制标记或工具参数文本。\n\
+              \   file_name 只能填写裸文件名，不得携带 draft/sandbox 或任何路径前缀。\n4. 新增子标题或新规则用 draft_append_markdown_section；替换已有标题块用 draft_replace_markdown_section。\n\
+              5. origin 必须正好填写 explicit_user_write；base_etag 必须来自最近一次 get_markdown_outline、get_markdown_section 或 get_core_archive。\n\
+              6. 工具成功后，用自然语言说明更新文件、落点和 commit_id；工具失败时，不要假称已经写入。\n"
+          maximum_iterations:
+            type: constant
+            value: 45
+        tool_node_version: '2'
+        agent_strategy_name: function_calling
+        agent_strategy_label: FunctionCalling
+        plugin_unique_identifier: langgenius/agent:0.0.34@4b41a374567eb7cb226ee2f851513794566956008f1166c63205efc921be72d8
+        agent_strategy_provider_name: langgenius/agent/agent
+      type: custom
+      width: 241
+      height: 187
+      position:
+        x: 342
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 342
+        y: 0
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.7
+x-loregit-export:
+  source: local_dify_postgres_live_workflow
+  app_id: bb3232af-7106-43ba-ae65-4f6e7fc82943
+  workflow_id: 20e9ea44-13f1-4687-9b83-da012a3c3437
+  workflow_version: '2026-05-03 01:56:38.171626'
+  note: API keys, provider credentials, and knowledge-base data are intentionally not included.

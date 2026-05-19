@@ -1,0 +1,89 @@
+# 是否使用老版本命令行界面
+old_cli: false
+# 最大并发线程数
+max_workers: 1
+# 请求超时时间（秒）
+request_timeout: 15
+# 最大重试次数
+max_retries: 3
+# 最大冷却时间, 单位ms
+max_wait_time: 1200
+# 最小冷却时间, 单位ms
+min_wait_time: 1000
+# 最小连接超时时间
+min_connect_timeout: 3.05
+# 保存小说格式, 可选: [txt, epub, pdf]
+novel_format: txt
+# 是否以散装形式保存小说
+bulk_files: false
+# 是否自动清理缓存文件
+auto_clear_dump: true
+# 下载完成后自动用默认应用打开生成的小说文件/文件夹（txt/epub）
+auto_open_downloaded_files: false
+# 是否使用 Edge TTS 生成有声小说
+enable_audiobook: false
+# Edge TTS 发音人
+audiobook_voice: zh-CN-XiaoxiaoNeural
+# Edge TTS 语速调整，例如 +0%、-10%
+audiobook_rate: +0%
+# Edge TTS 音量调整，例如 +0%、-10%
+audiobook_volume: +0%
+# Edge TTS 音调调整（留空表示默认）
+audiobook_pitch: ''
+# 有声小说输出格式，可选 mp3 或 wav
+audiobook_format: mp3
+# Edge TTS 有声小说并发生成的最大章节数
+audiobook_concurrency: 24
+# TTS 服务类型，可选 edge/third_party
+audiobook_tts_provider: edge
+# 第三方 TTS API 地址（可填写本地服务，如 http://localhost:8000）
+audiobook_tts_api_url: ''
+# 第三方 TTS API Token（如无可留空）
+audiobook_tts_api_token: ''
+# 第三方 TTS 模型名称或 ID
+audiobook_tts_model: ''
+# 保存路径
+save_path: ''
+# 使用官方API
+use_official_api: true
+# API列表
+api_endpoints: []
+# 是否下载段评（段落评论）
+enable_segment_comments: false
+# 每段最多保存的评论数
+segment_comments_top_n: 10
+# 段评抓取的并发线程数（每章内）
+segment_comments_workers: 32
+# 是否下载评论区图片（不含头像）
+download_comment_images: true
+# 是否下载评论区头像
+download_comment_avatars: true
+# 评论图片/头像下载并发线程数
+media_download_workers: 8
+# 拒绝下载的图片域名（包含匹配）
+blocked_media_domains:
+- p-passport-sign.bytedance.net
+# 是否强制将所有下载图片转码为 JPEG
+force_convert_images_to_jpeg: false
+# 若返回非 JPEG 且可解码则转码为 JPEG 保存
+jpeg_retry_convert: true
+# JPEG 转码质量 (0-100)
+jpeg_quality: 90
+# 检测到 HEIC/HEIF 时转码为 JPEG
+convert_heic_to_jpeg: true
+# 无法转码时是否保留 .heic/.heif
+keep_heic_original: false
+# EPUB 段落首行缩进 em 数
+first_line_indent_em: 2.0
+# 每章最多下载的媒体数（0 表示不限制）
+media_limit_per_chapter: 0
+# 图片最长边像素上限，>0 时缩放并转成 JPEG
+media_max_dimension_px: 1280
+# 是否允许覆盖已存在的文件
+allow_overwrite_files: true
+# 优先使用的书名字段 (book_name/original_book_name/book_short_name/ask_after_download)
+preferred_book_name_field: book_name
+# PDF 字体文件路径, 留空自动检测系统 CJK 字体
+pdf_font_path: null
+# 是否在下载完成后询问用户选择输出格式（true 时可选 txt/epub/pdf/散装文件）
+ask_format_after_download: false

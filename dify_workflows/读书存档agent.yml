@@ -1,0 +1,809 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: 读书存档agent
+  use_icon_as_answer_icon: false
+dependencies: []
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      enabled: true
+      number_limits: 3
+      fileUploadConfig:
+        file_size_limit: 15
+        batch_count_limit: 5
+        file_upload_limit: 20
+        audio_file_size_limit: 50
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        image_file_batch_limit: 10
+        workflow_file_upload_limit: 10
+        single_chunk_attachment_limit: 10
+        attachment_image_file_size_limit: 2
+      allowed_file_types:
+      - document
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_upload_methods:
+      - remote_url
+      - local_file
+    speech_to_text:
+      enabled: false
+    text_to_speech:
+      voice: ''
+      enabled: false
+      language: ''
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    suggested_questions: []
+    sensitive_word_avoidance:
+      enabled: false
+    suggested_questions_after_answer:
+      enabled: false
+  graph:
+    edges:
+    - id: 1770953322951start-source-1770955420235-target
+      data:
+        isInLoop: false
+        sourceType: iteration-start
+        targetType: code
+        iteration_id: '1770953322951'
+        isInIteration: true
+      type: custom
+      source: 1770953322951start
+      target: '1770955420235'
+      zIndex: 1002
+      sourceHandle: source
+      targetHandle: target
+    - id: 1770955420235-source-1770953558856-target
+      data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+        iteration_id: '1770953322951'
+        isInIteration: true
+      type: custom
+      source: '1770955420235'
+      target: '1770953558856'
+      zIndex: 1002
+      sourceHandle: source
+      targetHandle: target
+    - id: 1770948705030-source-1771151607227-target
+      data:
+        isInLoop: false
+        sourceType: document-extractor
+        targetType: code
+        isInIteration: false
+      type: custom
+      source: '1770948705030'
+      target: '1771151607227'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    - id: 1770948705030--1771151648936-target
+      data:
+        isInLoop: false
+        sourceType: document-extractor
+        targetType: code
+        isInIteration: false
+      type: custom
+      source: '1770948705030'
+      target: '1771151648936'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    - id: 1771151648936-source-1770953322951-target
+      data:
+        isInLoop: false
+        sourceType: code
+        targetType: iteration
+      type: custom
+      source: '1771151648936'
+      target: '1770953322951'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    - id: 1770953322951-source-1771208367691-target
+      data:
+        isInLoop: false
+        sourceType: iteration
+        targetType: code
+        isInIteration: false
+      type: custom
+      source: '1770953322951'
+      target: '1771208367691'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    - id: 1771208367691-source-1770957395169-target
+      data:
+        isInLoop: false
+        sourceType: code
+        targetType: answer
+      type: custom
+      source: '1771208367691'
+      target: '1770957395169'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    - id: start-source-1772001000002-target
+      data:
+        isInLoop: false
+        sourceType: start
+        targetType: if-else
+      type: custom
+      source: start
+      target: '1772001000002'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    - id: 1772001000002-1772001000003-source-1772001000001-target
+      data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      type: custom
+      source: '1772001000002'
+      target: '1772001000001'
+      zIndex: 0
+      sourceHandle: '1772001000003'
+      targetHandle: target
+    - id: 1772001000002-else-source-1770948705030-target
+      data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: document-extractor
+      type: custom
+      source: '1772001000002'
+      target: '1770948705030'
+      zIndex: 0
+      sourceHandle: else
+      targetHandle: target
+    - id: 1772001000001-source-1770953322951-target
+      data:
+        isInLoop: false
+        sourceType: code
+        targetType: iteration
+      type: custom
+      source: '1772001000001'
+      target: '1770953322951'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    - id: 1771151607227-source-1772001000001-target
+      data:
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      type: custom
+      source: '1771151607227'
+      target: '1772001000001'
+      zIndex: 0
+      sourceHandle: source
+      targetHandle: target
+    nodes:
+    - id: start
+      data:
+        desc: ''
+        type: start
+        title: 开始
+        selected: false
+        variables:
+        - hint: ''
+          type: text-input
+          label: 书名
+          default: ''
+          options: []
+          required: true
+          variable: book_name
+          placeholder: ''
+        - hint: API 传入的格式化章节文本（用 |||CHAPTER_START||| 分隔）
+          type: paragraph
+          label: raw_text
+          default: ''
+          options: []
+          required: false
+          variable: raw_text
+          placeholder: ''
+      type: custom
+      width: 242
+      height: 134
+      position:
+        x: 0
+        y: 17
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 0
+        y: 17
+    - id: '1770948705030'
+      data:
+        type: document-extractor
+        title: 文档提取器
+        selected: false
+        is_array_file: true
+        variable_selector:
+        - sys
+        - files
+      type: custom
+      width: 241
+      height: 103
+      position:
+        x: 703
+        y: 151
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 703
+        y: 151
+    - id: '1770953322951'
+      data:
+        type: iteration
+        title: 迭代
+        width: 806
+        height: 284
+        selected: false
+        is_parallel: true
+        output_type: array[string]
+        parallel_nums: 25
+        start_node_id: 1770953322951start
+        flatten_output: true
+        output_selector:
+        - '1770953558856'
+        - text
+        error_handle_mode: terminated
+        iterator_selector:
+        - '1772001000001'
+        - chunks
+        iterator_input_type: array[object]
+      type: custom
+      width: 806
+      height: 284
+      zIndex: 1
+      position:
+        x: 1766
+        y: 24
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1766
+        y: 24
+    - id: 1770953322951start
+      data:
+        desc: ''
+        type: iteration-start
+        title: ''
+        selected: false
+        isInIteration: true
+      type: custom-iteration-start
+      width: 44
+      height: 48
+      zIndex: 1002
+      parentId: '1770953322951'
+      position:
+        x: 60
+        y: 80
+      selected: false
+      draggable: false
+      selectable: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1826
+        y: 104
+    - id: '1770953558856'
+      data:
+        type: llm
+        model:
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+          completion_params:
+            thinking: false
+            temperature: 0.7
+            reasoning_effort: high
+        title: LLM 2
+        vision:
+          enabled: false
+        context:
+          enabled: true
+          variable_selector:
+          - '1770955420235'
+          - result
+        isInLoop: false
+        selected: false
+        iteration_id: '1770953322951'
+        isInIteration: true
+        prompt_template:
+        - id: 2b946d3a-aa36-4914-b782-4e3fa71f2a7c
+          role: system
+          text: '# 角色设定
+
+            你是一名网文叙事约束提取专家。你的任务不是逐章复述剧情，而是从一批章节中提取会约束后续创作的核心信息。
+
+
+            # 任务描述
+
+            阅读以下章节内容：
+
+            {{#1770953322951.item#}}{{#context#}}
+
+
+            # 输出格式
+
+            严格按以下格式输出一个段落档案（严禁开场白）：
+
+
+            ## Batch Archive: CH{起始}-{结束}
+
+            （起始和结束用本批实际章节号，从章节标题中提取）
+
+
+            ### 故事阶段
+
+            {一句话定位当前大阶段的叙事目标和故事位置}
+
+
+            ### 不可撤销事实
+
+            {本段确立的硬事实，后续不可推翻，每条一行}
+
+            - {事实}
+
+
+            ### 核心驱动进度
+
+            {按实际存在的题材选填，不存在的子结构不生成。可多子结构并行。}
+
+
+            升级/战斗类：
+
+            - 境界/战力: {当前状态}
+
+            - 突破: {有/无，若有写明}
+
+            - 已揭示上限: {有/无}
+
+            - 突破预兆: {有/无}
+
+
+            智斗/悬疑/推理类：
+
+            - 已揭示规则: {关键已确认的规则/真相}
+
+            - 信息差: {谁知道了什么/谁还不知道}
+
+            - 博弈态势: {谁占优/僵持/暗流}
+
+            - 待解谜题: {核心未解问题}
+
+
+            轮回/循环/无限类：
+
+            - 循环状态: 第{N}次
+
+            - 本轮差异: {与上轮关键变化}
+
+            - 累积保留: {跨循环保留的知识/能力}
+
+            - 蝴蝶效应: {行为→结果链}
+
+
+            言情/感情类：
+
+            - 感情阶段: {暧昧/表白/危机/复合/...}
+
+            - 阻碍: {当前阻碍}
+
+            - 催化: {推动力}
+
+
+            种田/基建/生存类：
+
+            - 资源/建设状态: {当前}
+
+            - 里程碑: {本段达成}
+
+            - 威胁/挑战: {当前}
+
+
+            末世/恐怖类：
+
+            - 安全等级: {评估}
+
+            - 威胁源: {当前}
+
+            - 生存策略: {当前}
+
+
+            ### 线索状态
+
+            {只列本段有推进或变化的线索}
+
+            - {线索名} ({主线/支线}) — {active推进中/dormant挂起/closing收束中}
+
+
+            ### 伏笔台账
+
+            {只记录本段新埋设或有进展的伏笔}
+
+            - {伏笔简述} — {planted刚埋/nurturing正在培育/overdue逾期未收} (CH{章节}埋, 可见性:{读者已知/角色未知/仅角色已知})
+
+
+            ### 未兑现承诺
+
+            {本段作出的新承诺}
+
+            - {承诺内容} (CH{章节}, 对{角色})
+
+
+            ### 关系变化
+
+            {本段有实质变化的关系}
+
+            - {角色A}→{角色B}: {变化描述}
+
+
+            ### 本段约束增量
+
+            {提炼给 world_model 的硬约束：新确立的规则、已关闭的可能性、世界观变化}
+
+
+            # 规则
+
+            1. 整段 800-1200 字，严禁超过 1500 字
+
+            2. 字段按信息量存在：无信息的字段直接省略整个章节，不生成"无"或"无变化"
+
+            3. 伏笔必须标注可见性维度：读者已知/角色未知/仅角色已知
+
+            4. 禁止搬运章节原文或做逐章摘要；只提取约束级信息
+
+            5. 禁止任何开场白、总结语或元评论
+
+            6. 核心驱动进度可包含多个子结构（混合题材），不存在的子结构不生成'
+      type: custom
+      width: 241
+      height: 87
+      zIndex: 1002
+      parentId: '1770953322951'
+      position:
+        x: 505
+        y: 60
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 2271
+        y: 84
+    - id: '1770955420235'
+      data:
+        code: "def main(item: dict) -> dict:\n    # 1. 提取当前 Bundle 中所有章节的标题和内容\n    # 使用列表推导式高效拼接\n    text_list = [f\"章节标题：{c['title']}\\\
+          n章节正文：{c['content']}\" for c in item['chapters']]\n    \n    # 2. 合并为长文本\n    full_text = \"\\n\\n\" + \"-\"*20\
+          \ + \"\\n\\n\"\n    full_text += \"\\n\\n\".join(text_list)\n    \n    # 3. 必须返回字典，Key 设为 result\n    return {\n\
+          \        \"result\": full_text\n    }"
+        type: code
+        title: 文字提取
+        outputs:
+          result:
+            type: string
+            children: null
+        isInLoop: false
+        selected: false
+        variables:
+        - variable: item
+          value_type: object
+          value_selector:
+          - '1770953322951'
+          - item
+        iteration_id: '1770953322951'
+        code_language: python3
+        isInIteration: true
+      type: custom
+      width: 241
+      height: 51
+      zIndex: 1002
+      parentId: '1770953322951'
+      position:
+        x: 184
+        y: 78
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1950
+        y: 102
+    - id: '1770957395169'
+      data:
+        type: answer
+        title: 直接回复
+        answer: '{{#1771208367691.final_text#}}'
+        selected: false
+        variables: []
+      type: custom
+      width: 241
+      height: 102
+      position:
+        x: 3013
+        y: 115
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 3013
+        y: 115
+    - id: '1771151607227'
+      data:
+        code: "import requests\nimport json\n\ndef main(raw_text: str) -> dict:\n    API_URL = \"http://host.docker.internal:8000/tools/adaptive_slice\"\
+          \n    \n    # 默认返回值（兜底）\n    result = {\n        \"chunks\": [],\n        \"total_chapters\": 0,\n        \"status\"\
+          : \"error\"\n    }\n\n    try:\n        # 1. 构造 Payload\n        payload = {\"arg1\": raw_text}\n        \n    \
+          \    # 2. 发起请求\n        resp = requests.post(API_URL, json=payload, timeout=60)\n        \n        if resp.status_code\
+          \ == 200:\n            data = resp.json()\n            # 成功覆盖\n            result[\"chunks\"] = data.get(\"data\"\
+          , [])\n            result[\"total_chapters\"] = data.get(\"total_chapters\", 0)\n            result[\"status\"]\
+          \ = \"success\"\n        else:\n            result[\"status\"] = f\"error: {resp.status_code}\"\n            \n\
+          \    except Exception as e:\n        result[\"status\"] = f\"error: {str(e)}\"\n    \n    # 3. 统一返回（确保包含所有 key）\n\
+          \    return result"
+        type: code
+        title: 动态切片重载传输
+        outputs:
+          chunks:
+            type: array[object]
+            children: null
+          status:
+            type: string
+            children: null
+          total_chapters:
+            type: number
+            children: null
+        selected: false
+        variables:
+        - variable: raw_text
+          value_type: array[string]
+          value_selector:
+          - '1770948705030'
+          - text
+        code_language: python3
+      type: custom
+      width: 241
+      height: 51
+      position:
+        x: 1064
+        y: 151
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1064
+        y: 151
+    - id: '1771151648936'
+      data:
+        code: "import requests\nimport json\nimport typing\n\ndef main(book_name: str, raw_text: list) -> dict:\n    \"\"\"\
+          \n    Dify 重载传输节点：批量归档 (确定性ID版)\n    \n    功能：\n    1. 接收书名 (book_name) 和 原始内容 (raw_text)。\n    2. 调用后端 batch_import\
+          \ 接口，不传 book_id。\n    3. 后端根据 book_name 自动生成确定性 ID 并自愈目录。\n    4. 返回生成的 book_id 供下游流程锁定使用。\n    \"\"\"\n    \n \
+          \   # Docker 宿主机内部通信地址\n    API_URL = \"http://host.docker.internal:8000/books/batch_import\"\n    \n    # 1. 预定义默认返回结构\
+          \ (兜底)\n    # 必须包含 Dify \"输出变量\" 中定义的所有字段\n    result = {\n        \"saved_count\": 0,\n        \"book_id\": \"\"\
+          ,\n        \"log\": \"\"\n    }\n\n    try:\n        # 2. 简单校验\n        if not book_name:\n            result[\"\
+          log\"] = \"❌ 错误: 书名(book_name) 不能为空，无法生成 ID\"\n            return result\n            \n        if not raw_text:\n\
+          \            result[\"log\"] = \"⚠️ 警告: 输入文本为空，跳过归档\"\n            return result\n\n        # 3. 构造 Payload\n  \
+          \      # 关键点：我们故意不传 \"book_id\"，只传 \"book_name\"\n        # 这会触发后端的 \"方案 S\"：自动计算 Hash ID + 自动建库\n        payload\
+          \ = {\n            \"book_name\": book_name,\n            \"content\": raw_text  # Dify 文档提取器通常输出 List[str]\n  \
+          \      }\n        \n        # 4. 发送请求 (设置 60s 超时，防止大文件写入时网络中断)\n        resp = requests.post(API_URL, json=payload,\
+          \ timeout=60)\n        \n        # 5. 处理响应\n        if resp.status_code == 200:\n            res_json = resp.json()\n\
+          \            \n            # 获取核心数据\n            saved_count = res_json.get(\"saved_count\", 0)\n            real_book_id\
+          \ = res_json.get(\"book_id\", \"unknown_id\") # 拿到后端生成的身份证号\n            \n            # 填充成功结果\n            result[\"\
+          saved_count\"] = saved_count\n            result[\"book_id\"] = real_book_id\n            result[\"log\"] = f\"\
+          ✅ 归档成功! 《{book_name}》 -> ID: {real_book_id} (共 {saved_count} 章)\"\n            \n        else:\n            # 尝试解析后端返回的\
+          \ JSON 错误信息\n            try:\n                err_msg = resp.json().get(\"message\", resp.text[:100])\n       \
+          \     except:\n                err_msg = resp.text[:100]\n                \n            result[\"log\"] = f\"❌ 归档失败\
+          \ (HTTP {resp.status_code}): {err_msg}\"\n            \n    except Exception as e:\n        # 捕获网络异常或其他代码错误\n  \
+          \      result[\"log\"] = f\"❌ 网络或系统异常: {str(e)}\"\n\n    return result"
+        type: code
+        title: 批量归档重载传输
+        outputs:
+          log:
+            type: string
+            children: null
+          book_id:
+            type: string
+            children: null
+          saved_count:
+            type: number
+            children: null
+        selected: true
+        variables:
+        - variable: book_name
+          value_type: string
+          value_selector:
+          - start
+          - book_name
+        - variable: raw_text
+          value_type: array[string]
+          value_selector:
+          - '1770948705030'
+          - text
+        code_language: python3
+      type: custom
+      width: 241
+      height: 51
+      position:
+        x: 1174
+        y: 254
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1174
+        y: 254
+    - id: '1771208367691'
+      data:
+        code: "\nimport json\nimport re\n\ndef main(summary_list: list, book_id: str):\n    \"\"\"\n    Pure aggregation:\
+          \ join batch summaries, build book-level overview.\n    File writing is handled by the backend (tomato_import),\
+          \ not here.\n    \"\"\"\n    valid = [str(s).strip() for s in summary_list if s]\n    if not valid:\n        return\
+          \ {\"final_text\": \"\", \"commit_id\": \"none\", \"latest_chapter_json\": \"{}\", \"total_count\": 0}\n\n    header\
+          \ = \"# 全书总汇总（自动索引）\\n\\n\"\n    header += f\"- 段落数：{len(valid)}\\n\"\n    header += \"- 生成方式：按段落档案抽取约束；完整段落记录保留在下方。\\\
+          n\\n\"\n\n    # Build overview from first and last segment\n    overview_sections = []\n    if valid:\n        first\
+          \ = valid[0]\n        last = valid[-1] if len(valid) > 1 else \"\"\n        # Extract story stage from first\n \
+          \       m = re.search(r\"### 故事阶段\\s*\\n(.+?)(?=\\n###|\\n##|\\Z)\", first, re.S)\n        if m:\n            overview_sections.append(f\"\
+          起始阶段：{m.group(1).strip()}\")\n        # Extract from last\n        if last:\n            m = re.search(r\"### 故事阶段\\\
+          s*\\n(.+?)(?=\\n###|\\n##|\\Z)\", last, re.S)\n            if m:\n                overview_sections.append(f\"当前阶段：{m.group(1).strip()}\"\
+          )\n\n    # Collect all chapter ranges for coverage index\n    ranges = []\n    for seg in valid:\n        m = re.search(r\"\
+          ## Batch Archive:\\s*CH(\\d+)\\s*[-–—]\\s*(\\d+)\", seg)\n        if m:\n            ranges.append((int(m.group(1)),\
+          \ int(m.group(2))))\n\n    if ranges:\n        coverage = f\"覆盖范围：CH{ranges[0][0]}-CH{ranges[-1][1]}（{len(ranges)}段）\"\
+          \n        overview_sections.append(coverage)\n\n    if overview_sections:\n        header += \"## 全书概览\\n\\n\"\n\
+          \        for line in overview_sections:\n            header += f\"- {line}\\n\"\n        header += \"\\n---\\n\\\
+          n\"\n    else:\n        header += \"---\\n\\n\"\n\n    header += \"# 分批阅读档案\\n\\n\"\n\n    full_text = header +\
+          \ \"\\n\\n\".join(valid)\n\n    # Count batch archives\n    count = len(re.findall(r\"## Batch Archive:\", full_text))\n\
+          \n    return {\n        \"final_text\": full_text,\n        \"commit_id\": \"deferred_to_backend\",\n        \"\
+          latest_chapter_json\": \"{}\",\n        \"total_count\": count\n    }\n"
+        type: code
+        title: 聚合归档解析Summary
+        outputs:
+          commit_id:
+            type: string
+            children: null
+          final_text:
+            type: string
+            children: null
+          total_count:
+            type: number
+            children: null
+          latest_chapter_json:
+            type: string
+            children: null
+        selected: false
+        variables:
+        - variable: summary_list
+          value_type: array[string]
+          value_selector:
+          - '1770953322951'
+          - output
+        - variable: book_id
+          value_type: string
+          value_selector:
+          - '1771151648936'
+          - book_id
+        code_language: python3
+      type: custom
+      width: 241
+      height: 51
+      position:
+        x: 2672
+        y: 140
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 2672
+        y: 140
+    - id: '1772001000002'
+      data:
+        desc: raw_text 非空走 API 路径，否则走文件上传路径
+        type: if-else
+        cases:
+        - id: '1772001000003'
+          case_id: '1772001000003'
+          conditions:
+          - id: '1772001000004'
+            value: ''
+            varType: string
+            variable_selector:
+            - start
+            - raw_text
+            comparison_operator: not empty
+          logical_operator: and
+        title: 输入方式分支
+        selected: false
+      type: custom
+      width: 241
+      height: 167
+      position:
+        x: 342
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 342
+        y: 0
+    - id: '1772001000001'
+      data:
+        code: "\nimport json as _json\nimport math\nimport re\n\ndef main(raw_text: str = \"\", upload_chunks: list = None)\
+          \ -> dict:\n    \"\"\"Relay node: parse raw_text OR relay upload_chunks into iteration-ready chunks.\"\"\"\n   \
+          \ if upload_chunks:\n        return {\"chunks\": upload_chunks, \"total_chapters\": len(upload_chunks)}\n\n    if\
+          \ not raw_text:\n        return {\"chunks\": [], \"total_chapters\": 0}\n\n    DELIMITER = \"|||CHAPTER_START|||\"\
+          \n    raw_chunks = [c.strip() for c in raw_text.split(DELIMITER) if c.strip()]\n    total = len(raw_chunks)\n  \
+          \  if total == 0:\n        return {\"chunks\": [], \"total_chapters\": 0}\n\n    # Larger segments for constraint\
+          \ extraction (~50-100 chapters per segment)\n    batch_size = max(50, math.ceil(total / 15))\n    bundled_data =\
+          \ []\n    for i in range(0, total, batch_size):\n        batch = raw_chunks[i : i + batch_size]\n        batch_chapters\
+          \ = []\n        ch_nums = []\n        for content in batch:\n            lines = content.splitlines()\n        \
+          \    title = lines[0].strip() if lines else \"\"\n            body = chr(10).join(lines[1:]).strip() if len(lines)\
+          \ > 1 else \"\"\n            if len(body) > 300000:\n                body = body[:300000] + \"...(Truncated)\"\n\
+          \            batch_chapters.append({\"title\": title, \"content\": body})\n            m = re.search(r\"第(\\d+)章\"\
+          , title)\n            if m:\n                ch_nums.append(int(m.group(1)))\n        if ch_nums:\n            range_label\
+          \ = \"CH{}-{}\".format(min(ch_nums), max(ch_nums))\n        else:\n            range_label = \"CH{}-{}\".format(i\
+          \ + 1, min(i + batch_size, total))\n        bundled_data.append({\n            \"range\": range_label,\n       \
+          \     \"chapters\": batch_chapters,\n        })\n\n    return {\"total_chapters\": total, \"chunks\": bundled_data}\n"
+        desc: 接收 raw_text，按 |||CHAPTER_START||| 切片打包为 chunks
+        type: code
+        title: 文本预切片
+        outputs:
+          chunks:
+            type: array[object]
+            children: null
+          total_chapters:
+            type: number
+            children: null
+        selected: false
+        variables:
+        - variable: raw_text
+          value_selector:
+          - start
+          - raw_text
+        - variable: upload_chunks
+          value_selector:
+          - '1771151607227'
+          - chunks
+        code_language: python3
+      type: custom
+      width: 241
+      height: 111
+      position:
+        x: 1425
+        y: 63
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      positionAbsolute:
+        x: 1425
+        y: 63
+    viewport:
+      x: -1097.2975068527815
+      y: 21.985818764378678
+      zoom: 0.7
+x-loregit-export:
+  source: local_dify_postgres_live_workflow
+  app_id: 590dd17b-d9d0-4d5b-bffa-e6f1d8e45810
+  workflow_id: c59ebd78-6519-4030-9b07-7160bb561467
+  workflow_version: '2026-05-09 13:23:40.603070'
+  note: API keys, provider credentials, and knowledge-base data are intentionally not included.
