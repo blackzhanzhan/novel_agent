@@ -189,6 +189,54 @@ class V74OutlinePromptCnGenericTests(unittest.TestCase):
         self.assertTrue(completion["thinking"])
         self.assertEqual(completion["temperature"], 0.2)
 
+    def test_outline_landing_button_is_forced_to_commit_route(self):
+        self.assertIn("强制排除", self.patch.CLASS_1_NAME)
+        for marker in [
+            "【大纲落档按钮请求】",
+            "目标文件：",
+            "只允许写入",
+            "必须使用 draft_replace_markdown_section",
+            "origin 必须是 explicit_user_write",
+            "draft/sandbox 草稿",
+        ]:
+            self.assertIn(marker, self.patch.CLASS_1_NAME)
+
+        self.assertIn("最高优先级", self.patch.CLASS_2_NAME)
+        for marker in [
+            "目标文件：brainstorm.md",
+            "目标文件：master_outline.md",
+            "目标文件：arc_outline.md",
+            "目标文件：chapter_outline.md",
+            "空模板生成首版可审阅草稿",
+            "不得只输出诊断",
+            "draft_replace_markdown_section",
+            "draft_append_markdown_section",
+        ]:
+            self.assertIn(marker, self.patch.CLASS_2_NAME)
+
+    def test_commit_prompt_requires_real_write_for_empty_outline_templates(self):
+        combined = "\n".join(
+            [
+                self.patch.OUTLINE_LANDING_PROTOCOL,
+                self.patch.COMMIT_QUERY,
+                self.patch.COMMIT_INSTRUCTION,
+            ]
+        )
+
+        for marker in [
+            "空模板也必须可写首版草稿",
+            "不得只诊断不写入",
+            "前端落档按钮协议",
+            "用户意图里“需要落档的大纲助手回复如下”后面的文本就是主要落档材料",
+            "不需要再次请求作者确认",
+            "目标文件：xxx.md",
+            "只有根标题",
+            "单文件落档时也必须调用写入工具",
+            "draft_replace_markdown_section",
+            "draft_append_markdown_section",
+        ]:
+            self.assertIn(marker, combined)
+
 
 if __name__ == "__main__":
     unittest.main()

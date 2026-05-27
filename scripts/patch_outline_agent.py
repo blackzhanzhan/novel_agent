@@ -142,6 +142,8 @@ OUTLINE_SEARCH_REFERENCE_PROTOCOL = """OUTLINE_SEARCH_REFERENCE_PROTOCOL：
 OUTLINE_LANDING_PROTOCOL = """OUTLINE_LANDING_ENGINE_PROTOCOL：
 - 适用场景：作者明确要求保存、落档、归档、写入大纲、初始化、重建，或把某个已选想法压进大纲层。
 - 适用场景也包括前端按钮触发的“【大纲落档按钮请求】”：这是作者明确点击落档按钮后的写入请求，不是继续讨论。
+- 强制落档信号：只要作者意图中出现“【大纲落档按钮请求】”“目标文件：brainstorm.md”“目标文件：master_outline.md”“目标文件：arc_outline.md”“目标文件：chapter_outline.md”“只允许写入”“必须使用 draft_replace_markdown_section”“必须使用 draft_append_markdown_section”之一，就必须按写入请求处理，不得回到讨论态或只做状态诊断。
+- 单文件落档信号：当目标文件是 brainstorm.md、master_outline.md、arc_outline.md 或 chapter_outline.md，且请求包含“写入、保存、归档、落档、整理进去、生成大纲、生成总纲、初始化、重建、生产卡”任一语义时，必须进入单文件写入链路。
 - 目标是把作者意图压缩成可审阅、可回退、可继续编辑的大纲工件，而不是继续开放发散。
 - 写入前先形成 landing_plan：来源意图、写入范围、目标文件、证据读取、想法到大纲层映射、世界模型风险、回退风险。
 - 想法到大纲层映射要把每个重要想法落到 brainstorm.md、master_outline.md、arc_outline.md、chapter_outline.md 之一，不让成熟想法漂在闲聊文本里。
@@ -151,6 +153,8 @@ OUTLINE_LANDING_PROTOCOL = """OUTLINE_LANDING_ENGINE_PROTOCOL：
 - brainstorm.md 要保留被拒方案、风险区和待决问题，不静默删除作者仍可能回收的灵感。
 - master_outline.md 要先保护读者承诺、核心循环和不可违背约束，再加入新的生产方向。
 - 改变耐久世界事实的方案只能写为 WORLD_MODEL_REQUIRED，不得提升为 SOURCE_FACT 或硬约束。
+- 空模板也必须可写首版草稿：如果目标 outline 文件只有一级标题或接近空白，但 summary.md、world_model.md、status_card.md 或用户提供的助手回复已经足够形成方向，就读取目标文件 etag 后直接写入首版草稿；不得以“当前文件为空”“需要先讨论”为由只诊断不写入。
+- 不得只诊断不写入：在明确写入请求下，只要读取工具可用且目标文件 etag 可取得，最终必须至少调用一次 draft_replace_markdown_section 或 draft_append_markdown_section；如果真的无法写入，必须指出具体缺失的工具返回或目标文件，而不是输出泛泛建议。
 - 工具调用后，只汇报哪些大纲文件已更新、每个文件承载了什么生产决定；不叙述原始工具参数。
 """
 
@@ -279,6 +283,13 @@ COMMIT_QUERY = f"""当前 book_id：{{{{#{START_NODE_ID}.book_id#}}}}
 
 你当前执行的是“大纲归档/初始化/重建”任务，不是继续讨论。
 
+如果作者当前意图含有“【大纲落档按钮请求】”或“目标文件：”，这是前端落档按钮触发的强写入请求。你必须：
+1. 从作者意图中识别目标文件，只写该目标 outline 文件。
+2. 读取目标文件 markdown outline，取得 section_path 和 base_etag。
+3. 基于用户提供的助手回复、summary/world/status/style 证据和目标文件层级生成首版草稿。
+4. 调用 draft_replace_markdown_section；只有需要追加子标题时才调用 draft_append_markdown_section。
+5. 不得只输出“落档计划”“状态诊断”“需要作者确认”而不调用写入工具。
+
 请先判定：
 1. 作者是否明确要求写入、初始化、重建、归档或保存大纲。
 2. 本轮是单文件归档，还是 OUTLINE_LAYER_CONTROL_PROTOCOL 的四件套初始化/重建。
@@ -294,7 +305,7 @@ COMMIT_QUERY = f"""当前 book_id：{{{{#{START_NODE_ID}.book_id#}}}}
 {OUTLINE_PRODUCTION_CONTROL_PROTOCOL}
 {OUTLINE_TOOL_ARGUMENT_SAFETY_PROTOCOL}
 
-请保持归档态。写入前读取必要证据，写入后用自然语言汇报每个文件的落点和工具返回结果。
+请保持归档态。写入前读取必要证据，写入后用自然语言汇报每个文件的落点和工具返回结果。明确写入请求下，空模板也必须可写首版草稿，不得只诊断不写入。
 """
 
 
@@ -321,6 +332,14 @@ OUTLINE_LAYER_CONTROL_PROTOCOL：
    - 四个现有 outline 文件：取得 outline、section_path 和 base_etag。
 3. 每份输出必须显式写出“依据与对齐”：对应到 summary/world/status/style 的证据，而不是凭空生成。
 
+前端落档按钮协议：
+1. 当用户意图含“【大纲落档按钮请求】”时，视为作者已经选择落档，不需要再次请求作者确认。
+2. 必须从用户意图中提取“目标文件：xxx.md”。单文件落档只写这个目标文件，不能顺手写其他 outline 文件。
+3. 用户意图里“需要落档的大纲助手回复如下”后面的文本就是主要落档材料，即使其中含有 DISCUSS_AGENT 的状态说明，也不得因此回到讨论态。
+4. 如果目标文件目前只有根标题，如 `# 总纲`，仍然读取 outline 和 base_etag，并用 draft_replace_markdown_section 写入包含原一级标题的首版草稿。
+5. 在目标文件、base_etag 和可落档材料都存在时，禁止只回答“落地计划已形成”“当前内容为空”“建议先讨论”；必须完成一次写入工具调用。
+6. 写入失败时，只能报告具体失败点：目标文件、section_path、base_etag、工具调用或证据不足。不要把失败伪装成已更新。
+
 初始化/重建四件套的最低质量线：
 1. `brainstorm.md` 至少包含：核心卖点、开局/当前钩子、爽点母题、可试路线、风险区、拒绝清单、待决问题。
 2. `master_outline.md` 至少包含：读者承诺、主欲望、核心循环、终局方向、主角推进线、期待债台账、重大兑现顺序、不可违背约束。
@@ -339,6 +358,7 @@ OUTLINE_FLAT_WRITE_PROTOCOL：
 7. `base_etag` 必须来自最近读取目标文件的 get_markdown_outline/get_markdown_section/get_core_archive。
 8. 对只有根标题的模板文件，替换根 section；content 必须保留该文件自己的一级标题。
 9. 四份文件没有全部写入成功前，不得宣称初始化/重建完成。工具失败时必须指出失败文件和原因。
+10. 单文件落档时也必须调用写入工具；不得把“落档计划”当成完成结果。
 
 硬边界：
 - 只能写 `brainstorm.md`、`master_outline.md`、`arc_outline.md`、`chapter_outline.md`。
@@ -361,12 +381,16 @@ CLASS_1_NAME = """用户当前仍然希望继续讨论，而不是立即把结�
 - 该分类进入 `DISCUSS_AGENT`。
 - 重点是继续讨论当前问题，而不是生成可写入文件的草稿。
 - 只要没有明确要求写入、归档、初始化或重建，都优先视为本分类。
+- 强制排除：如果用户意图含“【大纲落档按钮请求】”“目标文件：”“只允许写入”“必须使用 draft_replace_markdown_section”“必须使用 draft_append_markdown_section”“origin 必须是 explicit_user_write”“draft/sandbox 草稿”，不得进入本分类。
+- 强制排除：如果用户明确写入 brainstorm.md、master_outline.md、arc_outline.md 或 chapter_outline.md，或要求生成总纲/生成大纲并写入目标文件，不得进入本分类。
 """
 
 
 CLASS_2_NAME = """用户当前希望把结果整理为 outline 文件草稿，或明确要求初始化/重建大纲。
 
 适用情况：
+- 最高优先级：用户意图中出现“【大纲落档按钮请求】”，必须进入本分类。
+- 最高优先级：用户意图中出现“目标文件：brainstorm.md”“目标文件：master_outline.md”“目标文件：arc_outline.md”或“目标文件：chapter_outline.md”，且包含写入、保存、归档、落档、整理进去、生成大纲、生成总纲、初始化、重建或生产卡语义，必须进入本分类。
 - 用户明确要求写入、保存、归档、整理进去、落档。
 - 用户意图中出现“【大纲落档按钮请求】”或说明这是前端点击落档按钮触发的请求。
 - 用户要求“初始化大纲”“重建大纲”“初始化/重建大纲”“生成四层大纲”“生成大纲四件套”。
@@ -376,6 +400,8 @@ CLASS_2_NAME = """用户当前希望把结果整理为 outline 文件草稿，�
 
 边界：
 - 该分类进入 `COMMIT_AGENT`。
+- 该分类必须允许空模板生成首版可审阅草稿；不得把“只有根标题”当成继续讨论的理由。
+- 进入本分类后，COMMIT_AGENT 必须读取目标文件并调用 draft_replace_markdown_section 或 draft_append_markdown_section；不得只输出诊断。
 - 初始化/重建大纲必须生成四份 outline 草稿：brainstorm.md、master_outline.md、arc_outline.md、chapter_outline.md。
 - 只有 outline 四件套可写；不得写 chapter_draft.md 或 world/status/summary/style/error 文件。
 """
