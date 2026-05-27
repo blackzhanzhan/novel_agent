@@ -89,6 +89,17 @@ def _build_dify_query(markdown: str, payload: dict[str, Any] | None = None) -> s
     query = _normalize_text(markdown)
     if isinstance(payload, dict):
         raw_intent = payload.get("intent")
+        # Rewrite landing-button intents so Dify question-classifier
+        # routes to COMMIT_AGENT instead of DISCUSS_AGENT.
+        if isinstance(raw_intent, str) and raw_intent.strip():
+            if re.search(r"(大纲落档按钮请求|目标文件[：:]\s*\S+\.md)", raw_intent):
+                _m = re.search(r"目标文件[：:]\s*(\S+\.md)", raw_intent)
+                _target = _m.group(1) if _m else payload.get("active_file", "master_outline.md")
+                raw_intent = (
+                    f"请立即为 {_target} 生成大纲草稿并写入。"
+                    "这是写入/归档/保存请求，不是讨论。"
+                    "请调用 draft_replace_markdown_section 工具完成写入。"
+                )
         if isinstance(raw_intent, str) and raw_intent.strip():
             query = raw_intent.strip()
         if _should_bootstrap_world_model_query(payload.get("active_file"), markdown):

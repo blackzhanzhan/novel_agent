@@ -11,6 +11,19 @@ from utils import tomato_search  # noqa: E402
 
 
 class V80TomatoSearchDirectIdTests(unittest.TestCase):
+    def test_extract_initial_state_handles_inner_semicolon_brace_text(self) -> None:
+        html = (
+            '<script>window.__INITIAL_STATE__='
+            '{"page":{"bookName":"兽人规则","abstract":"内部文本 }; 不应截断",'
+            '"itemIds":["1","2"]},"search":{}};'
+            '</script>'
+        )
+
+        state = tomato_search._extract_initial_state(html, context="unit")
+
+        self.assertEqual(state["page"]["bookName"], "兽人规则")
+        self.assertEqual(state["page"]["itemIds"], ["1", "2"])
+
     def test_numeric_book_id_returns_book_info_result(self) -> None:
         with patch("utils.tomato_search.get_book_info") as get_book_info:
             get_book_info.return_value = {

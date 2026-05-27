@@ -37,9 +37,51 @@ _UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 )
+_HTTP_HEADERS = {
+    "User-Agent": _UA,
+    "Accept-Encoding": "gzip, deflate",
+}
 
 _INIT_STATE_RE = re.compile(r"window\.__INITIAL_STATE__\s*=\s*(\{.+?\})\s*;", re.DOTALL)
 _BOOK_ID_RE = re.compile(r"(?:fanqienovel\.com/page/)?(\d{12,22})")
+
+
+def _extract_initial_state(html: str, *, context: str) -> dict[str, Any]:
+    """Extract window.__INITIAL_STATE__ without being fooled by inner `};` text."""
+    marker_match = re.search(r"window\.__INITIAL_STATE__\s*=", html)
+    if not marker_match:
+        raise RuntimeError(f"Cannot extract __INITIAL_STATE__ from {context}")
+
+    json_start = html.find("{", marker_match.end())
+    if json_start < 0:
+        raise RuntimeError(f"Cannot locate __INITIAL_STATE__ JSON start in {context}")
+
+    depth = 0
+    in_string = False
+    escaped = False
+    for index in range(json_start, len(html)):
+        char = html[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                raw = html[json_start : index + 1]
+                raw = raw.replace(":undefined", ":null").replace(",undefined", ",null")
+                return json.loads(raw)
+
+    raise RuntimeError(f"Cannot locate __INITIAL_STATE__ JSON end in {context}")
 
 # ---------------------------------------------------------------------------
 # Charset helpers
@@ -61,7 +103,7 @@ def _load_charset() -> list[list[str]]:
             pass
 
     try:
-        resp = requests.get(_CHARSET_URL, headers={"User-Agent": _UA}, timeout=15)
+        resp = requests.get(_CHARSET_URL, headers=_HTTP_HEADERS, timeout=15)
         resp.raise_for_status()
         data = resp.json()
         _CHARSET_LOCAL.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
@@ -98,7 +140,7 @@ def _decode_content(encoded: str) -> str:
 
 def _make_session() -> requests.Session:
     s = requests.Session()
-    s.headers.update({"User-Agent": _UA})
+    s.headers.update(_HTTP_HEADERS)
     web_id = str(random.randint(10**18, 10**19 - 1))
     s.cookies.set("novel_web_id", web_id, domain=".fanqienovel.com")
     return s
@@ -150,7 +192,7 @@ def _search_via_api(query: str, *, count: int = 20) -> list[dict[str, Any]] | No
         resp = requests.get(
             _SEARCH_API_URL,
             params=params,
-            headers={"User-Agent": _UA},
+            headers=_HTTP_HEADERS,
             timeout=10,
         )
         if resp.status_code != 200 or not resp.text:
@@ -232,11 +274,10 @@ def _search_via_html(query: str, *, count: int = 20) -> list[dict[str, Any]] | N
     except Exception:
         return None
 
-    match = _INIT_STATE_RE.search(resp.text)
-    if not match:
+    try:
+        state = _extract_initial_state(resp.text, context=f"search page {query}")
+    except Exception:
         return None
-
-    state = json.loads(match.group(1))
     book_list = state.get("search", {}).get("searchBookList")
     if not book_list:
         return None
@@ -309,11 +350,7 @@ def get_book_info(book_id: str) -> dict[str, Any]:
     resp = _as_utf8(session.get(url, timeout=15))
     resp.raise_for_status()
 
-    match = _INIT_STATE_RE.search(resp.text)
-    if not match:
-        raise RuntimeError(f"Cannot extract __INITIAL_STATE__ from book page {book_id}")
-
-    state = json.loads(match.group(1))
+    state = _extract_initial_state(resp.text, context=f"book page {book_id}")
     page_data = state.get("page", {})
     book_name = page_data.get("bookName", "")
     author = page_data.get("author", "")
@@ -374,7 +411,7 @@ def _fetch_chapter_via_proxy(chapter_id: str) -> tuple[str, str] | None:
         resp = requests.get(
             _CHAPTER_PROXY_URL,
             params={"item_id": chapter_id},
-            headers={"User-Agent": _UA},
+            headers=_HTTP_HEADERS,
             timeout=15,
         )
         if resp.status_code != 200:
@@ -413,7 +450,7 @@ def _fetch_chapter_via_reader(chapter_id: str) -> tuple[str, str] | None:
     """Fetch chapter by scraping the reader page and extracting __INITIAL_STATE__."""
     try:
         cookie_val = f"novel_web_id={random.randint(10**18, 10**19 - 1)}"
-        headers = {"User-Agent": _UA, "cookie": cookie_val}
+        headers = {**_HTTP_HEADERS, "cookie": cookie_val}
         resp = _as_utf8(requests.get(
             f"https://fanqienovel.com/reader/{chapter_id}",
             headers=headers,
@@ -478,11 +515,7 @@ def download_book(book_id: str, *, progress_cb: Any = None) -> dict[str, Any]:
     resp = _as_utf8(session.get(url, timeout=15))
     resp.raise_for_status()
 
-    match = _INIT_STATE_RE.search(resp.text)
-    if not match:
-        raise RuntimeError(f"Cannot extract __INITIAL_STATE__ from book page {book_id}")
-
-    state = json.loads(match.group(1))
+    state = _extract_initial_state(resp.text, context=f"book page {book_id}")
     page_data = state.get("page", {})
     book_name = page_data.get("bookName", "")
     author = page_data.get("author", "")
