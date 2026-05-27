@@ -6,11 +6,10 @@
 
 ## 工程证据
 
-- 公网体验：<http://47.237.191.43:15173/>
 - 演示视频：<https://www.bilibili.com/video/BV12eVA69EGV/>
 - GitHub Pages 技术档案：<https://blackzhanzhan.github.io/novel_agent/>
 - 测试规模：`novel_git_server/tests` 当前包含 **50 个核心测试文件、426 个测试函数**，覆盖 Flask API、Git 分支 / diff / 回退、Markdown 区块写入、Dify ToolProvider 边界、运行时配置、公开体验会话隔离和章节审核归档等核心链路。
-- 部署路径：仓库提供 Release ZIP、本地源码运行、Docker Compose 本地构建、GHCR 预构建镜像和半公开体验版服务器部署说明；`deploy/demo/deploy_doctor.py` 区分本地 demo 与 public-demo 画像做部署体检。
+- 部署路径：仓库提供 Release ZIP、本地源码运行、Docker Compose 本地构建、GHCR 预构建镜像和只读体验模式服务器部署说明；`deploy/demo/deploy_doctor.py` 区分本地 demo 与 public-demo 画像做部署体检。
 
 完整介绍、截图、架构说明、部署教程和 FAQ 都放在 GitHub Pages：
 
